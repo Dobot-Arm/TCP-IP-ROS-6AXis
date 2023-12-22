@@ -420,11 +420,11 @@ bool CR5Robot::robotMode(dobot_bringup::RobotMode::Request& request, dobot_bring
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
         response.res = -1;
-        return false;
+        return true;
     } catch (const std::exception& err) {
         ROS_ERROR("%s", err.what());
         response.res = -1;
-        return false;
+        return true;
     }
 }
 
@@ -777,11 +777,10 @@ bool CR5Robot::modbusCreate(dobot_bringup::ModbusCreate::Request& request,
                      request.is_rtu[0]);
         }
         commander_->dashboardDoCmd(cmd, response.res, result);
-        if (result.size() != 2)
+        if (result.size() != 1)
             throw std::logic_error("Haven't recv any result");
 
-        response.res = str2Int(result[0].c_str());
-        response.index = str2Int(result[1].c_str());
+        response.index = str2Int(result[0].c_str());
         return true;
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
