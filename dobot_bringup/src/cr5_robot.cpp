@@ -873,11 +873,11 @@ bool CR5Robot::setHoldRegs(dobot_bringup::SetHoldRegs::Request& request, dobot_b
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
         response.res = -1;
-        return false;
+        return true;
     } catch (const std::exception& err) {
         ROS_ERROR("%s", err.what());
         response.res = -1;
-        return false;
+        return true;
     }
 }
 
