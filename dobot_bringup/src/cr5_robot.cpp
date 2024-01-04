@@ -70,7 +70,7 @@ void CR5Robot::init()
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/LimZ", &CR5Robot::limZ, this));
     server_tbl_.push_back(
         control_nh_.advertiseService("/dobot_bringup/srv/SetArmOrientation", &CR5Robot::setArmOrientation, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetPayload", &CR5Robot::SetPayload, this));
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetPayload", &CR5Robot::setPayload, this));
     server_tbl_.push_back(
         control_nh_.advertiseService("/dobot_bringup/srv/PositiveSolution", &CR5Robot::positiveSolution, this));
     server_tbl_.push_back(
@@ -131,20 +131,19 @@ void CR5Robot::init()
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoJ", &CR5Robot::servoJ, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoP", &CR5Robot::servoP, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Sync", &CR5Robot::sync, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Wait", &CR5Robot::wait, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StartTrace", &CR5Robot::startTrace, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StartPath", &CR5Robot::startPath, this));
     server_tbl_.push_back(
         control_nh_.advertiseService("/dobot_bringup/srv/StartFCTrace", &CR5Robot::startFCTrace, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MoveJog", &CR5Robot::moveJog, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StopmoveJog", &CR5Robot::StopmoveJog, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/wait", &CR5Robot::wait, this));
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StopmoveJog", &CR5Robot::stopmoveJog, this));
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Wait", &CR5Robot::wait, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Continue", &CR5Robot::Continue, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/pause", &CR5Robot::pause, this));
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Pause", &CR5Robot::pause, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ModbusClose", &CR5Robot::modbusClose, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetInBits", &CR5Robot::getInBits, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetInRegs", &CR5Robot::getInRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/getHoldRegs", &CR5Robot::getHoldRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetHoldRegs", &CR5Robot::getHoldRegs, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetHoldRegs", &CR5Robot::setHoldRegs, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetCoils", &CR5Robot::getCoils, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetCoils", &CR5Robot::setCoils, this));
@@ -411,9 +410,12 @@ bool CR5Robot::robotMode(dobot_bringup::RobotMode::Request& request, dobot_bring
 
         std::vector<std::string> result;
         commander_->dashboardDoCmd(cmd, response.res, result);
-        if (result.empty())
-            throw std::logic_error("robotMode : Empty string");
-
+        if (result.empty()) {
+            ROS_ERROR("%s", "robotMode : Empty string");
+            response.mode = -1;
+            response.res = -1;
+            return true;
+        }
         response.mode = str2Int(result[0].c_str());
         response.res = 0;
         return true;
@@ -601,10 +603,11 @@ bool CR5Robot::arch(dobot_bringup::Arch::Request& request, dobot_bringup::Arch::
 {
     try {
         char cmd[100];
-        if (request.cpValue.size() == 0) {
-            sprintf(cmd, "Arch(%d)", request.index);
-        } else {
+        if (!request.cpValue.empty() && !request.cpValue[0].empty()) {
             sprintf(cmd, "Arch(%d,%s)", request.index, request.cpValue[0].c_str());
+
+        } else {
+            sprintf(cmd, "Arch(%d)", request.index);
         }
         commander_->dashboardDoCmd(cmd, response.res);
         return true;
@@ -658,7 +661,7 @@ bool CR5Robot::setArmOrientation(dobot_bringup::SetArmOrientation::Request& requ
     }
 }
 
-bool CR5Robot::SetPayload(dobot_bringup::SetPayload::Request& request, dobot_bringup::SetPayload::Response& response)
+bool CR5Robot::setPayload(dobot_bringup::SetPayload::Request& request, dobot_bringup::SetPayload::Response& response)
 {
     try {
         char cmd[100];
@@ -770,15 +773,19 @@ bool CR5Robot::modbusCreate(dobot_bringup::ModbusCreate::Request& request,
     try {
         char cmd[300];
         std::vector<std::string> result;
-        if (request.is_rtu.size() == 0) {
+        if (request.is_rtu.empty()) {
             snprintf(cmd, sizeof(cmd), "ModbusCreate(%s,%d,%d)", request.ip.c_str(), request.port, request.slave_id);
         } else {
             snprintf(cmd, sizeof(cmd), "ModbusCreate(%s,%d,%d,%d)", request.ip.c_str(), request.port, request.slave_id,
                      request.is_rtu[0]);
         }
         commander_->dashboardDoCmd(cmd, response.res, result);
-        if (result.size() != 1)
-            throw std::logic_error("Haven't recv any result");
+        if (result.size() != 1) {
+            ROS_ERROR("%s", "Haven't recv any result");
+            response.res = -1;
+            response.index = -1;
+            return true;
+        }
 
         response.index = str2Int(result[0].c_str());
         return true;
@@ -827,11 +834,11 @@ bool CR5Robot::getInRegs(dobot_bringup::GetInRegs::Request& request, dobot_bring
 {
     try {
         char cmd[100];
-        if (request.valType.empty()) {
-            snprintf(cmd, sizeof(cmd), "GetInRegs(%d,%d,%d)", request.index, request.addr, request.count);
-        } else {
+        if (!request.valType.empty() && !request.valType[0].empty()) {
             snprintf(cmd, sizeof(cmd), "GetInRegs(%d,%d,%d,%s)", request.index, request.addr, request.count,
                      request.valType[0].c_str());
+        } else {
+            snprintf(cmd, sizeof(cmd), "GetInRegs(%d,%d,%d)", request.index, request.addr, request.count);
         }
         commander_->dashboardDoCmd(cmd, response.res);
         return true;
@@ -846,13 +853,27 @@ bool CR5Robot::getHoldRegs(dobot_bringup::GetHoldRegs::Request& request, dobot_b
 {
     try {
         char cmd[100];
-        snprintf(cmd, sizeof(cmd), "GetHoldRegs(%d,%d,%d,%s)", request.index, request.addr, request.count,
-                 request.valtype[0].c_str());
-        commander_->dashboardDoCmd(cmd, response.res);
+        std::vector<std::string> result;
+        if (!request.valtype.empty() && !request.valtype[0].empty()) {
+            snprintf(cmd, sizeof(cmd), "GetHoldRegs(%d,%d,%d,%s)", request.index, request.addr, request.count,
+                     request.valtype[0].c_str());
+        } else {
+            snprintf(cmd, sizeof(cmd), "GetHoldRegs(%d,%d,%d)", request.index, request.addr, request.count);
+        }
+
+        commander_->dashboardDoCmd(cmd, response.res, result);
+        if (result.empty()) {
+            ROS_ERROR("%s", "Haven't recv any result");
+            response.res = -1;
+            response.index = -1;
+            return true;
+        }
+        response.index = str2Int(result[0].c_str());
         return true;
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
         response.res = -1;
+        response.index = -1;
         return false;
     }
 }
@@ -862,13 +883,15 @@ bool CR5Robot::setHoldRegs(dobot_bringup::SetHoldRegs::Request& request, dobot_b
     try {
         char cmd[200];
         std::vector<std::string> result;
-        snprintf(cmd, sizeof(cmd), "SetHoldRegs(%d,%d,%d,%s,%s)", request.index, request.addr, request.count,
-                 request.valTab.c_str(), request.valtype[0].c_str());
-        commander_->dashboardDoCmd(cmd, response.res, result);
-        if (result.empty())
-            throw std::logic_error("Haven't recv any result");
+        if (!request.valtype.empty() && !request.valtype[0].empty()) {
+            snprintf(cmd, sizeof(cmd), "SetHoldRegs(%d,%d,%d,%s,%s)", request.index, request.addr, request.count,
+                     request.valTab.c_str(), request.valtype[0].c_str());
+        } else {
+            snprintf(cmd, sizeof(cmd), "SetHoldRegs(%d,%d,%d,%s)", request.index, request.addr, request.count,
+                     request.valTab.c_str());
+        }
 
-        response.res = str2Int(result[0].c_str());
+        commander_->dashboardDoCmd(cmd, response.res, result);
         return true;
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
@@ -1300,7 +1323,7 @@ bool CR5Robot::getPose(dobot_bringup::GetPose::Request& request, dobot_bringup::
     try {
         char cmd[100];
 
-        if (request.user.size() == 0) {
+        if (request.user.empty()) {
             sprintf(cmd, "GetPose()");
         } else {
             sprintf(cmd, "GetPose(%d,%d)", request.user[0], request.tool[0]);
@@ -1443,7 +1466,7 @@ bool CR5Robot::servoJ(dobot_bringup::ServoJ::Request& request, dobot_bringup::Se
 {
     try {
         char cmd[100];
-        if (request.t.size() == 0) {
+        if (request.t.empty()) {
             sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f)", request.offset1, request.offset2,
                     request.offset3, request.offset4, request.offset5, request.offset6);
         } else {
@@ -1795,7 +1818,7 @@ bool CR5Robot::moveJog(dobot_bringup::MoveJog::Request& request, dobot_bringup::
     }
 }
 
-bool CR5Robot::StopmoveJog(dobot_bringup::StopmoveJog::Request& request, dobot_bringup::StopmoveJog::Response& response)
+bool CR5Robot::stopmoveJog(dobot_bringup::StopmoveJog::Request& request, dobot_bringup::StopmoveJog::Response& response)
 {
     try {
         char cmd[100] = "moveJog()";

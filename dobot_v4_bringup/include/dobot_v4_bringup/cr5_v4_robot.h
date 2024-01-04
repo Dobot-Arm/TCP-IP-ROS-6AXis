@@ -212,109 +212,109 @@ protected:
     bool stop(dobot_v4_bringup::Stop::Request& request, dobot_v4_bringup::Stop::Response& response);
     bool pause(dobot_v4_bringup::Pause::Request& request, dobot_v4_bringup::Pause::Response& response);
     bool Continue(dobot_v4_bringup::Continue::Request& request, dobot_v4_bringup::Continue::Response& response);
-    bool EnableSafeSkin(dobot_v4_bringup::EnableSafeSkin::Request& request,
+    bool enableSafeSkin(dobot_v4_bringup::EnableSafeSkin::Request& request,
                         dobot_v4_bringup::EnableSafeSkin::Response& response);
-    bool SetSafeSkin(dobot_v4_bringup::SetSafeSkin::Request& request,
+    bool setSafeSkin(dobot_v4_bringup::SetSafeSkin::Request& request,
                      dobot_v4_bringup::SetSafeSkin::Response& response);
-    bool GetStartPose(dobot_v4_bringup::GetStartPose::Request& request,
+    bool getStartPose(dobot_v4_bringup::GetStartPose::Request& request,
                       dobot_v4_bringup::GetStartPose::Response& response);
-    bool StartPath(dobot_v4_bringup::StartPath::Request& request, dobot_v4_bringup::StartPath::Response& response);
-    bool PositiveKin(dobot_v4_bringup::PositiveKin::Request& request,
+    bool startPath(dobot_v4_bringup::StartPath::Request& request, dobot_v4_bringup::StartPath::Response& response);
+    bool positiveKin(dobot_v4_bringup::PositiveKin::Request& request,
                      dobot_v4_bringup::PositiveKin::Response& response);
-    bool InverseKin(dobot_v4_bringup::InverseKin::Request& request, dobot_v4_bringup::InverseKin::Response& response);
-    bool GetAngle(dobot_v4_bringup::GetAngle::Request& request, dobot_v4_bringup::GetAngle::Response& response);
-    bool GetPose(dobot_v4_bringup::GetPose::Request& request, dobot_v4_bringup::GetPose::Response& response);
-    bool EmergencyStop(dobot_v4_bringup::EmergencyStop::Request& request,
+    bool inverseKin(dobot_v4_bringup::InverseKin::Request& request, dobot_v4_bringup::InverseKin::Response& response);
+    bool getAngle(dobot_v4_bringup::GetAngle::Request& request, dobot_v4_bringup::GetAngle::Response& response);
+    bool getPose(dobot_v4_bringup::GetPose::Request& request, dobot_v4_bringup::GetPose::Response& response);
+    bool emergencyStop(dobot_v4_bringup::EmergencyStop::Request& request,
                        dobot_v4_bringup::EmergencyStop::Response& response);
     bool setCollisionLevel(dobot_v4_bringup::SetCollisionLevel::Request& request,
                            dobot_v4_bringup::SetCollisionLevel::Response& response);
-    bool ModbusRTUCreate(dobot_v4_bringup::ModbusRTUCreate::Request& request,
+    bool modbusRTUCreate(dobot_v4_bringup::ModbusRTUCreate::Request& request,
                          dobot_v4_bringup::ModbusRTUCreate::Response& response);
-    bool ModbusCreate(dobot_v4_bringup::ModbusCreate::Request& request,
+    bool modbusCreate(dobot_v4_bringup::ModbusCreate::Request& request,
                       dobot_v4_bringup::ModbusCreate::Response& response);
-    bool ModbusClose(dobot_v4_bringup::ModbusClose::Request& request,
+    bool modbusClose(dobot_v4_bringup::ModbusClose::Request& request,
                      dobot_v4_bringup::ModbusClose::Response& response);
-    bool GetInBits(dobot_v4_bringup::GetInBits::Request& request, dobot_v4_bringup::GetInBits::Response& response);
-    bool GetInRegs(dobot_v4_bringup::GetInRegs::Request& request, dobot_v4_bringup::GetInRegs::Response& response);
-    bool GetCoils(dobot_v4_bringup::GetCoils::Request& request, dobot_v4_bringup::GetCoils::Response& response);
-    bool SetCoils(dobot_v4_bringup::SetCoils::Request& request, dobot_v4_bringup::SetCoils::Response& response);
-    bool GetHoldRegs(dobot_v4_bringup::GetHoldRegs::Request& request,
+    bool getInBits(dobot_v4_bringup::GetInBits::Request& request, dobot_v4_bringup::GetInBits::Response& response);
+    bool getInRegs(dobot_v4_bringup::GetInRegs::Request& request, dobot_v4_bringup::GetInRegs::Response& response);
+    bool getCoils(dobot_v4_bringup::GetCoils::Request& request, dobot_v4_bringup::GetCoils::Response& response);
+    bool setCoils(dobot_v4_bringup::SetCoils::Request& request, dobot_v4_bringup::SetCoils::Response& response);
+    bool getHoldRegs(dobot_v4_bringup::GetHoldRegs::Request& request,
                      dobot_v4_bringup::GetHoldRegs::Response& response);
-    bool SetHoldRegs(dobot_v4_bringup::SetHoldRegs::Request& request,
+    bool setHoldRegs(dobot_v4_bringup::SetHoldRegs::Request& request,
                      dobot_v4_bringup::SetHoldRegs::Response& response);
-    bool GetErrorID(dobot_v4_bringup::GetErrorID::Request& request, dobot_v4_bringup::GetErrorID::Response& response);
+    bool getErrorID(dobot_v4_bringup::GetErrorID::Request& request, dobot_v4_bringup::GetErrorID::Response& response);
     bool DI(dobot_v4_bringup::DI::Request& request, dobot_v4_bringup::DI::Response& response);
-    bool ToolDI(dobot_v4_bringup::ToolDI::Request& request, dobot_v4_bringup::ToolDI::Response& response);
+    bool toolDI(dobot_v4_bringup::ToolDI::Request& request, dobot_v4_bringup::ToolDI::Response& response);
     bool AI(dobot_v4_bringup::AI::Request& request, dobot_v4_bringup::AI::Response& response);
-    bool ToolAI(dobot_v4_bringup::ToolAI::Request& request, dobot_v4_bringup::ToolAI::Response& response);
+    bool toolAI(dobot_v4_bringup::ToolAI::Request& request, dobot_v4_bringup::ToolAI::Response& response);
     bool DIGroup(dobot_v4_bringup::DIGroup::Request& request, dobot_v4_bringup::DIGroup::Response& response);
     bool doGroup(dobot_v4_bringup::DOGroup::Request& request, dobot_v4_bringup::DOGroup::Response& response);
     bool brakeControl(dobot_v4_bringup::BrakeControl::Request& request,
                       dobot_v4_bringup::BrakeControl::Response& response);
     bool startDrag(dobot_v4_bringup::StartDrag::Request& request, dobot_v4_bringup::StartDrag::Response& response);
-    bool StopDrag(dobot_v4_bringup::StopDrag::Request& request, dobot_v4_bringup::StopDrag::Response& response);
-    bool DragSensivity(dobot_v4_bringup::DragSensivity::Request& request,
+    bool stopDrag(dobot_v4_bringup::StopDrag::Request& request, dobot_v4_bringup::StopDrag::Response& response);
+    bool dragSensivity(dobot_v4_bringup::DragSensivity::Request& request,
                        dobot_v4_bringup::DragSensivity::Response& response);
-    bool GetDO(dobot_v4_bringup::GetDO::Request& request, dobot_v4_bringup::GetDO::Response& response);
-    bool GetAO(dobot_v4_bringup::GetAO::Request& request, dobot_v4_bringup::GetAO::Response& response);
-    bool GetDOGroup(dobot_v4_bringup::GetDOGroup::Request& request, dobot_v4_bringup::GetDOGroup::Response& response);
-    bool SetTool485(dobot_v4_bringup::SetTool485::Request& request, dobot_v4_bringup::SetTool485::Response& response);
-    bool SetSafeWallEnable(dobot_v4_bringup::SetSafeWallEnable::Request& request,
+    bool getDO(dobot_v4_bringup::GetDO::Request& request, dobot_v4_bringup::GetDO::Response& response);
+    bool getAO(dobot_v4_bringup::GetAO::Request& request, dobot_v4_bringup::GetAO::Response& response);
+    bool getDOGroup(dobot_v4_bringup::GetDOGroup::Request& request, dobot_v4_bringup::GetDOGroup::Response& response);
+    bool setTool485(dobot_v4_bringup::SetTool485::Request& request, dobot_v4_bringup::SetTool485::Response& response);
+    bool setSafeWallEnable(dobot_v4_bringup::SetSafeWallEnable::Request& request,
                            dobot_v4_bringup::SetSafeWallEnable::Response& response);
-    bool SetToolPower(dobot_v4_bringup::SetToolPower::Request& request,
+    bool setToolPower(dobot_v4_bringup::SetToolPower::Request& request,
                       dobot_v4_bringup::SetToolPower::Response& response);
-    bool SetToolMode(dobot_v4_bringup::SetToolMode::Request& request,
+    bool setToolMode(dobot_v4_bringup::SetToolMode::Request& request,
                      dobot_v4_bringup::SetToolMode::Response& response);
-    bool SetBackDistance(dobot_v4_bringup::SetBackDistance::Request& request,
+    bool setBackDistance(dobot_v4_bringup::SetBackDistance::Request& request,
                          dobot_v4_bringup::SetBackDistance::Response& response);
-    bool SetPostCollisionMode(dobot_v4_bringup::SetPostCollisionMode::Request& request,
+    bool setPostCollisionMode(dobot_v4_bringup::SetPostCollisionMode::Request& request,
                               dobot_v4_bringup::SetPostCollisionMode::Response& response);
-    bool SetUser(dobot_v4_bringup::SetUser::Request& request, dobot_v4_bringup::SetUser::Response& response);
-    bool SetTool(dobot_v4_bringup::SetTool::Request& request, dobot_v4_bringup::SetTool::Response& response);
-    bool CalcUser(dobot_v4_bringup::CalcUser::Request& request, dobot_v4_bringup::CalcUser::Response& response);
-    bool CalcTool(dobot_v4_bringup::CalcTool::Request& request, dobot_v4_bringup::CalcTool::Response& response);
-    bool GetInputBool(dobot_v4_bringup::GetInputBool::Request& request,
+    bool setUser(dobot_v4_bringup::SetUser::Request& request, dobot_v4_bringup::SetUser::Response& response);
+    bool setTool(dobot_v4_bringup::SetTool::Request& request, dobot_v4_bringup::SetTool::Response& response);
+    bool calcUser(dobot_v4_bringup::CalcUser::Request& request, dobot_v4_bringup::CalcUser::Response& response);
+    bool calcTool(dobot_v4_bringup::CalcTool::Request& request, dobot_v4_bringup::CalcTool::Response& response);
+    bool getInputBool(dobot_v4_bringup::GetInputBool::Request& request,
                       dobot_v4_bringup::GetInputBool::Response& response);
-    bool GetInputInt(dobot_v4_bringup::GetInputInt::Request& request,
+    bool getInputInt(dobot_v4_bringup::GetInputInt::Request& request,
                      dobot_v4_bringup::GetInputInt::Response& response);
-    bool GetInputFloat(dobot_v4_bringup::GetInputFloat::Request& request,
+    bool getInputFloat(dobot_v4_bringup::GetInputFloat::Request& request,
                        dobot_v4_bringup::GetInputFloat::Response& response);
-    bool GetOutputBool(dobot_v4_bringup::GetOutputBool::Request& request,
+    bool getOutputBool(dobot_v4_bringup::GetOutputBool::Request& request,
                        dobot_v4_bringup::GetOutputBool::Response& response);
-    bool GetOutputInt(dobot_v4_bringup::GetOutputInt::Request& request,
+    bool getOutputInt(dobot_v4_bringup::GetOutputInt::Request& request,
                       dobot_v4_bringup::GetOutputInt::Response& response);
-    bool GetOutputFloat(dobot_v4_bringup::GetOutputFloat::Request& request,
+    bool getOutputFloat(dobot_v4_bringup::GetOutputFloat::Request& request,
                         dobot_v4_bringup::GetOutputFloat::Response& response);
-    bool SetOutputBool(dobot_v4_bringup::SetOutputBool::Request& request,
+    bool setOutputBool(dobot_v4_bringup::SetOutputBool::Request& request,
                        dobot_v4_bringup::SetOutputBool::Response& response);
-    bool SetOutputInt(dobot_v4_bringup::SetOutputInt::Request& request,
+    bool setOutputInt(dobot_v4_bringup::SetOutputInt::Request& request,
                       dobot_v4_bringup::SetOutputInt::Response& response);
-    bool SetOutputFloat(dobot_v4_bringup::SetOutputFloat::Request& request,
+    bool setOutputFloat(dobot_v4_bringup::SetOutputFloat::Request& request,
                         dobot_v4_bringup::SetOutputFloat::Response& response);
     bool movJ(dobot_v4_bringup::MovJ::Request& request, dobot_v4_bringup::MovJ::Response& response);
     bool movL(dobot_v4_bringup::MovL::Request& request, dobot_v4_bringup::MovL::Response& response);
-    bool MovLIO(dobot_v4_bringup::MovLIO::Request& request, dobot_v4_bringup::MovLIO::Response& response);
-    bool MovJIO(dobot_v4_bringup::MovJIO::Request& request, dobot_v4_bringup::MovJIO::Response& response);
-    bool Arc(dobot_v4_bringup::Arc::Request& request, dobot_v4_bringup::Arc::Response& response);
-    bool Circle(dobot_v4_bringup::Circle::Request& request, dobot_v4_bringup::Circle::Response& response);
+    bool movLIO(dobot_v4_bringup::MovLIO::Request& request, dobot_v4_bringup::MovLIO::Response& response);
+    bool movJIO(dobot_v4_bringup::MovJIO::Request& request, dobot_v4_bringup::MovJIO::Response& response);
+    bool arc(dobot_v4_bringup::Arc::Request& request, dobot_v4_bringup::Arc::Response& response);
+    bool circle(dobot_v4_bringup::Circle::Request& request, dobot_v4_bringup::Circle::Response& response);
     bool moveJog(dobot_v4_bringup::MoveJog::Request& request, dobot_v4_bringup::MoveJog::Response& response);
     bool stopmoveJog(dobot_v4_bringup::StopMoveJog::Request& request,
                      dobot_v4_bringup::StopMoveJog::Response& response);
-    bool RelMovJTool(dobot_v4_bringup::RelMovJTool::Request& request,
+    bool relMovJTool(dobot_v4_bringup::RelMovJTool::Request& request,
                      dobot_v4_bringup::RelMovJTool::Response& response);
-    bool RelMovLTool(dobot_v4_bringup::RelMovLTool::Request& request,
+    bool relMovLTool(dobot_v4_bringup::RelMovLTool::Request& request,
                      dobot_v4_bringup::RelMovLTool::Response& response);
-    bool RelMovJUser(dobot_v4_bringup::RelMovJUser::Request& request,
+    bool relMovJUser(dobot_v4_bringup::RelMovJUser::Request& request,
                      dobot_v4_bringup::RelMovJUser::Response& response);
-    bool RelMovLUser(dobot_v4_bringup::RelMovLUser::Request& request,
+    bool relMovLUser(dobot_v4_bringup::RelMovLUser::Request& request,
                      dobot_v4_bringup::RelMovLUser::Response& response);
     bool relJointMovJ(dobot_v4_bringup::RelJointMovJ::Request& request,
                       dobot_v4_bringup::RelJointMovJ::Response& response);
-    bool GetCurrentCommandId(dobot_v4_bringup::GetCurrentCommandId::Request& request,
+    bool getCurrentCommandId(dobot_v4_bringup::GetCurrentCommandId::Request& request,
                              dobot_v4_bringup::GetCurrentCommandId::Response& response);
-    bool ServoJ(dobot_v4_bringup::ServoJ::Request& request, dobot_v4_bringup::ServoJ::Response& response);
-    bool ServoP(dobot_v4_bringup::ServoP::Request& request, dobot_v4_bringup::ServoP::Response& response);
-    bool getErrorID(dobot_v4_bringup::GetErrorID::Request& request, dobot_v4_bringup::GetErrorID::Response& response);
+    bool servoJ(dobot_v4_bringup::ServoJ::Request& request, dobot_v4_bringup::ServoJ::Response& response);
+    bool servoP(dobot_v4_bringup::ServoP::Request& request, dobot_v4_bringup::ServoP::Response& response);
+    bool GetErrorID(dobot_v4_bringup::GetErrorID::Request& request, dobot_v4_bringup::GetErrorID::Response& response);
     bool tcpDashboard(dobot_v4_bringup::TcpDashboard::Request& request,
                       dobot_v4_bringup::TcpDashboard::Response& response);
     std::vector<double> sample_traj(const trajectory_msgs::JointTrajectoryPoint& P0,

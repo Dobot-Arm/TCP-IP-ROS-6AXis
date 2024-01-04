@@ -753,21 +753,21 @@ public:
     void SetOutputBool(int address, int value)
     {
         char cmd[100];
-        sprintf(cmd, "GetOutputFloat(%d,%d)", address, value);
+        sprintf(cmd, "SetOutputBool(%d,%d)", address, value);
         dash_board_tcp_->tcpSend(cmd, strlen(cmd));
     }
 
     void SetOutputInt(int address, int value)
     {
         char cmd[100];
-        sprintf(cmd, "GetOutputFloat(%d,%d)", address, value);
+        sprintf(cmd, "SetOutputInt(%d,%d)", address, value);
         dash_board_tcp_->tcpSend(cmd, strlen(cmd));
     }
 
     void SetOutputFloat(int address, double value)
     {
         char cmd[100];
-        sprintf(cmd, "GetOutputFloat(%d,%0.3f)", address, value);
+        sprintf(cmd, "SetOutputFloat(%d,%0.3f)", address, value);
         dash_board_tcp_->tcpSend(cmd, strlen(cmd));
     }
 

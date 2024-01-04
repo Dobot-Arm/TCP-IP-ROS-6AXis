@@ -207,7 +207,7 @@ protected:
     bool limZ(dobot_bringup::LimZ::Request& request, dobot_bringup::LimZ::Response& response);
     bool setArmOrientation(dobot_bringup::SetArmOrientation::Request& request,
                            dobot_bringup::SetArmOrientation::Response& response);
-    bool SetPayload(dobot_bringup::SetPayload::Request& request, dobot_bringup::SetPayload::Response& response);
+    bool setPayload(dobot_bringup::SetPayload::Request& request, dobot_bringup::SetPayload::Response& response);
     bool positiveSolution(dobot_bringup::PositiveSolution::Request& request,
                           dobot_bringup::PositiveSolution::Response& response);
     bool inverseSolution(dobot_bringup::InverseSolution::Request& request,
@@ -288,7 +288,7 @@ protected:
     bool startPath(dobot_bringup::StartPath::Request& request, dobot_bringup::StartPath::Response& response);
     bool startFCTrace(dobot_bringup::StartFCTrace::Request& request, dobot_bringup::StartFCTrace::Response& response);
     bool moveJog(dobot_bringup::MoveJog::Request& request, dobot_bringup::MoveJog::Response& response);
-    bool StopmoveJog(dobot_bringup::StopmoveJog::Request& request, dobot_bringup::StopmoveJog::Response& response);
+    bool stopmoveJog(dobot_bringup::StopmoveJog::Request& request, dobot_bringup::StopmoveJog::Response& response);
     // bool SyncAll(dobot_bringup::SyncAll::Request& request, dobot_bringup::SyncAll::Response& response);
     bool wait(dobot_bringup::Wait::Request& request, dobot_bringup::Wait::Response& response);
     bool Continue(dobot_bringup::Continues::Request& request, dobot_bringup::Continues::Response& response);

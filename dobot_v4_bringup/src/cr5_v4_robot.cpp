@@ -169,76 +169,76 @@ void CRRobot::init()
     server_tbl_.push_back(control_nh_.advertiseService(serviceStop, &CRRobot::stop, this));
     server_tbl_.push_back(control_nh_.advertiseService(servicePause, &CRRobot::pause, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceContinue, &CRRobot::Continue, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceEnableSafeSkin, &CRRobot::EnableSafeSkin, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetSafeSkin, &CRRobot::SetSafeSkin, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetStartPose, &CRRobot::GetStartPose, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceStartPath, &CRRobot::StartPath, this));
-    server_tbl_.push_back(control_nh_.advertiseService(servicePositiveKin, &CRRobot::PositiveKin, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceInverseKin, &CRRobot::InverseKin, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetAngle, &CRRobot::GetAngle, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetPose, &CRRobot::GetPose, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceEnableSafeSkin, &CRRobot::enableSafeSkin, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetSafeSkin, &CRRobot::setSafeSkin, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetStartPose, &CRRobot::getStartPose, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceStartPath, &CRRobot::startPath, this));
+    server_tbl_.push_back(control_nh_.advertiseService(servicePositiveKin, &CRRobot::positiveKin, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceInverseKin, &CRRobot::inverseKin, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetAngle, &CRRobot::getAngle, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetPose, &CRRobot::getPose, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceSetCollisionLevel, &CRRobot::setCollisionLevel, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceEmergencyStop, &CRRobot::EmergencyStop, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusRTUCreate, &CRRobot::ModbusRTUCreate, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusCreate, &CRRobot::ModbusCreate, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusClose, &CRRobot::ModbusClose, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInBits, &CRRobot::GetInBits, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInRegs, &CRRobot::GetInRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetCoils, &CRRobot::GetCoils, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetCoils, &CRRobot::SetCoils, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetHoldRegs, &CRRobot::GetHoldRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetHoldRegs, &CRRobot::SetHoldRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetErrorID, &CRRobot::GetErrorID, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceEmergencyStop, &CRRobot::emergencyStop, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusRTUCreate, &CRRobot::modbusRTUCreate, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusCreate, &CRRobot::modbusCreate, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceModbusClose, &CRRobot::modbusClose, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInBits, &CRRobot::getInBits, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInRegs, &CRRobot::getInRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetCoils, &CRRobot::getCoils, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetCoils, &CRRobot::setCoils, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetHoldRegs, &CRRobot::getHoldRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetHoldRegs, &CRRobot::setHoldRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetErrorID, &CRRobot::getErrorID, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceDI, &CRRobot::DI, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceToolDI, &CRRobot::ToolDI, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceToolDI, &CRRobot::toolDI, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceAI, &CRRobot::AI, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceToolAI, &CRRobot::ToolAI, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceToolAI, &CRRobot::toolAI, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceDIGroup, &CRRobot::DIGroup, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceDOGroup, &CRRobot::doGroup, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceBrakeControl, &CRRobot::brakeControl, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceStartDrag, &CRRobot::startDrag, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceStopDrag, &CRRobot::StopDrag, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceDragSensivity, &CRRobot::DragSensivity, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetDO, &CRRobot::GetDO, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetAO, &CRRobot::GetAO, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetDOGroup, &CRRobot::GetDOGroup, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetTool485, &CRRobot::SetTool485, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetSafeWallEnable, &CRRobot::SetSafeWallEnable, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetToolPower, &CRRobot::SetToolPower, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetToolMode, &CRRobot::SetToolMode, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetBackDistance, &CRRobot::SetBackDistance, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceStopDrag, &CRRobot::stopDrag, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceDragSensivity, &CRRobot::dragSensivity, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetDO, &CRRobot::getDO, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetAO, &CRRobot::getAO, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetDOGroup, &CRRobot::getDOGroup, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetTool485, &CRRobot::setTool485, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetSafeWallEnable, &CRRobot::setSafeWallEnable, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetToolPower, &CRRobot::setToolPower, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetToolMode, &CRRobot::setToolMode, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetBackDistance, &CRRobot::setBackDistance, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService(serviceSetPostCollisionMode, &CRRobot::SetPostCollisionMode, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetUser, &CRRobot::SetUser, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetTool, &CRRobot::SetTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceCalcUser, &CRRobot::CalcUser, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceCalcTool, &CRRobot::CalcTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputBool, &CRRobot::GetInputBool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputInt, &CRRobot::GetInputInt, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputFloat, &CRRobot::GetInputFloat, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputBool, &CRRobot::GetOutputBool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputInt, &CRRobot::GetOutputInt, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputFloat, &CRRobot::GetOutputFloat, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputBool, &CRRobot::SetOutputBool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputInt, &CRRobot::SetOutputInt, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputFloat, &CRRobot::SetOutputFloat, this));
+        control_nh_.advertiseService(serviceSetPostCollisionMode, &CRRobot::setPostCollisionMode, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetUser, &CRRobot::setUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetTool, &CRRobot::setTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceCalcUser, &CRRobot::calcUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceCalcTool, &CRRobot::calcTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputBool, &CRRobot::getInputBool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputInt, &CRRobot::getInputInt, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetInputFloat, &CRRobot::getInputFloat, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputBool, &CRRobot::getOutputBool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputInt, &CRRobot::getOutputInt, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceGetOutputFloat, &CRRobot::getOutputFloat, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputBool, &CRRobot::setOutputBool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputInt, &CRRobot::setOutputInt, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceSetOutputFloat, &CRRobot::setOutputFloat, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceMovJ, &CRRobot::movJ, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceMovL, &CRRobot::movL, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceMovLIO, &CRRobot::MovLIO, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceMovJIO, &CRRobot::MovJIO, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceArc, &CRRobot::Arc, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceCircle, &CRRobot::Circle, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceMovLIO, &CRRobot::movLIO, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceMovJIO, &CRRobot::movJIO, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceArc, &CRRobot::arc, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceCircle, &CRRobot::circle, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceMoveJog, &CRRobot::moveJog, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceStopMoveJog, &CRRobot::stopmoveJog, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovJTool, &CRRobot::RelMovJTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovLTool, &CRRobot::RelMovLTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovJUser, &CRRobot::RelMovJUser, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovLUser, &CRRobot::RelMovLUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovJTool, &CRRobot::relMovJTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovLTool, &CRRobot::relMovLTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovJUser, &CRRobot::relMovJUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceRelMovLUser, &CRRobot::relMovLUser, this));
     server_tbl_.push_back(control_nh_.advertiseService(serviceRelJointMovJ, &CRRobot::relJointMovJ, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService(serviceGetCurrentCommandId, &CRRobot::GetCurrentCommandId, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceServoJ, &CRRobot::ServoJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService(serviceServoP, &CRRobot::ServoP, this));
+        control_nh_.advertiseService(serviceGetCurrentCommandId, &CRRobot::getCurrentCommandId, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceServoJ, &CRRobot::servoJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService(serviceServoP, &CRRobot::servoP, this));
 
     registerGoalCallback(boost::bind(&CRRobot::goalHandle, this, _1));
     registerCancelCallback(boost::bind(&CRRobot::cancelHandle, this, _1));
@@ -536,102 +536,102 @@ bool CRRobot::setCollisionLevel(dobot_v4_bringup::SetCollisionLevel::Request& re
     return commander_->callRosService(parseTool::parsersetCollisionLevelRequest2String(request), response.res);
 }
 
-bool CRRobot::EnableSafeSkin(dobot_v4_bringup::EnableSafeSkin::Request& request,
+bool CRRobot::enableSafeSkin(dobot_v4_bringup::EnableSafeSkin::Request& request,
                              dobot_v4_bringup::EnableSafeSkin::Response& response)
 {
     return commander_->callRosService(parseTool::parserEnableSafeSkinRequest2String(request), response.res);
 }
 
-bool CRRobot::SetSafeSkin(dobot_v4_bringup::SetSafeSkin::Request& request,
+bool CRRobot::setSafeSkin(dobot_v4_bringup::SetSafeSkin::Request& request,
                           dobot_v4_bringup::SetSafeSkin::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetSafeSkinRequest2String(request), response.res);
 }
 
-bool CRRobot::GetStartPose(dobot_v4_bringup::GetStartPose::Request& request,
+bool CRRobot::getStartPose(dobot_v4_bringup::GetStartPose::Request& request,
                            dobot_v4_bringup::GetStartPose::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetStartPoseRequest2String(request), response.res);
 }
 
-bool CRRobot::StartPath(dobot_v4_bringup::StartPath::Request& request, dobot_v4_bringup::StartPath::Response& response)
+bool CRRobot::startPath(dobot_v4_bringup::StartPath::Request& request, dobot_v4_bringup::StartPath::Response& response)
 {
     return commander_->callRosService(parseTool::parserStartPathRequest2String(request), response.res);
 }
 
-bool CRRobot::PositiveKin(dobot_v4_bringup::PositiveKin::Request& request,
+bool CRRobot::positiveKin(dobot_v4_bringup::PositiveKin::Request& request,
                           dobot_v4_bringup::PositiveKin::Response& response)
 {
     return commander_->callRosService(parseTool::parserPositiveKinRequest2String(request), response.res);
 }
 
-bool CRRobot::InverseKin(dobot_v4_bringup::InverseKin::Request& request,
+bool CRRobot::inverseKin(dobot_v4_bringup::InverseKin::Request& request,
                          dobot_v4_bringup::InverseKin::Response& response)
 {
     return commander_->callRosService(parseTool::parserInverseKinRequest2String(request), response.res);
 }
 
-bool CRRobot::GetAngle(dobot_v4_bringup::GetAngle::Request& request, dobot_v4_bringup::GetAngle::Response& response)
+bool CRRobot::getAngle(dobot_v4_bringup::GetAngle::Request& request, dobot_v4_bringup::GetAngle::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetAngleRequest2String(request), response.res);
 }
 
-bool CRRobot::GetPose(dobot_v4_bringup::GetPose::Request& request, dobot_v4_bringup::GetPose::Response& response)
+bool CRRobot::getPose(dobot_v4_bringup::GetPose::Request& request, dobot_v4_bringup::GetPose::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetPoseRequest2String(request), response.res);
 }
 
-bool CRRobot::EmergencyStop(dobot_v4_bringup::EmergencyStop::Request& request,
+bool CRRobot::emergencyStop(dobot_v4_bringup::EmergencyStop::Request& request,
                             dobot_v4_bringup::EmergencyStop::Response& response)
 {
     return commander_->callRosService(parseTool::parserEmergencyStopRequest2String(request), response.res);
 }
 
-bool CRRobot::ModbusRTUCreate(dobot_v4_bringup::ModbusRTUCreate::Request& request,
+bool CRRobot::modbusRTUCreate(dobot_v4_bringup::ModbusRTUCreate::Request& request,
                               dobot_v4_bringup::ModbusRTUCreate::Response& response)
 {
     return commander_->callRosService(parseTool::parserModbusRTUCreateRequest2String(request), response.res);
 }
 
-bool CRRobot::ModbusCreate(dobot_v4_bringup::ModbusCreate::Request& request,
+bool CRRobot::modbusCreate(dobot_v4_bringup::ModbusCreate::Request& request,
                            dobot_v4_bringup::ModbusCreate::Response& response)
 {
     return commander_->callRosService(parseTool::parserModbusCreateRequest2String(request), response.res);
 }
 
-bool CRRobot::ModbusClose(dobot_v4_bringup::ModbusClose::Request& request,
+bool CRRobot::modbusClose(dobot_v4_bringup::ModbusClose::Request& request,
                           dobot_v4_bringup::ModbusClose::Response& response)
 {
     return commander_->callRosService(parseTool::parserModbusCloseRequest2String(request), response.res);
 }
 
-bool CRRobot::GetInBits(dobot_v4_bringup::GetInBits::Request& request, dobot_v4_bringup::GetInBits::Response& response)
+bool CRRobot::getInBits(dobot_v4_bringup::GetInBits::Request& request, dobot_v4_bringup::GetInBits::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetInBitsRequest2String(request), response.res);
 }
 
-bool CRRobot::GetInRegs(dobot_v4_bringup::GetInRegs::Request& request, dobot_v4_bringup::GetInRegs::Response& response)
+bool CRRobot::getInRegs(dobot_v4_bringup::GetInRegs::Request& request, dobot_v4_bringup::GetInRegs::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetInRegsRequest2String(request), response.res);
 }
 
-bool CRRobot::GetCoils(dobot_v4_bringup::GetCoils::Request& request, dobot_v4_bringup::GetCoils::Response& response)
+bool CRRobot::getCoils(dobot_v4_bringup::GetCoils::Request& request, dobot_v4_bringup::GetCoils::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetCoilsRequest2String(request), response.res);
 }
 
-bool CRRobot::SetCoils(dobot_v4_bringup::SetCoils::Request& request, dobot_v4_bringup::SetCoils::Response& response)
+bool CRRobot::setCoils(dobot_v4_bringup::SetCoils::Request& request, dobot_v4_bringup::SetCoils::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetCoilsRequest2String(request), response.res);
 }
 
-bool CRRobot::GetHoldRegs(dobot_v4_bringup::GetHoldRegs::Request& request,
+bool CRRobot::getHoldRegs(dobot_v4_bringup::GetHoldRegs::Request& request,
                           dobot_v4_bringup::GetHoldRegs::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetHoldRegsRequest2String(request), response.res);
 }
 
-bool CRRobot::SetHoldRegs(dobot_v4_bringup::SetHoldRegs::Request& request,
+bool CRRobot::setHoldRegs(dobot_v4_bringup::SetHoldRegs::Request& request,
                           dobot_v4_bringup::SetHoldRegs::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetHoldRegsRequest2String(request), response.res);
@@ -648,7 +648,7 @@ bool CRRobot::DI(dobot_v4_bringup::DI::Request& request, dobot_v4_bringup::DI::R
     return commander_->callRosService(parseTool::parserDIRequest2String(request), response.res);
 }
 
-bool CRRobot::ToolDI(dobot_v4_bringup::ToolDI::Request& request, dobot_v4_bringup::ToolDI::Response& response)
+bool CRRobot::toolDI(dobot_v4_bringup::ToolDI::Request& request, dobot_v4_bringup::ToolDI::Response& response)
 {
     return commander_->callRosService(parseTool::parserToolDIRequest2String(request), response.res);
 }
@@ -658,7 +658,7 @@ bool CRRobot::AI(dobot_v4_bringup::AI::Request& request, dobot_v4_bringup::AI::R
     return commander_->callRosService(parseTool::parserAIRequest2String(request), response.res);
 }
 
-bool CRRobot::ToolAI(dobot_v4_bringup::ToolAI::Request& request, dobot_v4_bringup::ToolAI::Response& response)
+bool CRRobot::toolAI(dobot_v4_bringup::ToolAI::Request& request, dobot_v4_bringup::ToolAI::Response& response)
 {
     return commander_->callRosService(parseTool::parserToolAIRequest2String(request), response.res);
 }
@@ -684,138 +684,138 @@ bool CRRobot::startDrag(dobot_v4_bringup::StartDrag::Request& request, dobot_v4_
     return commander_->callRosService(parseTool::parserstartDragRequest2String(request), response.res);
 }
 
-bool CRRobot::StopDrag(dobot_v4_bringup::StopDrag::Request& request, dobot_v4_bringup::StopDrag::Response& response)
+bool CRRobot::stopDrag(dobot_v4_bringup::StopDrag::Request& request, dobot_v4_bringup::StopDrag::Response& response)
 {
     return commander_->callRosService(parseTool::parserStopDragRequest2String(request), response.res);
 }
 
-bool CRRobot::DragSensivity(dobot_v4_bringup::DragSensivity::Request& request,
+bool CRRobot::dragSensivity(dobot_v4_bringup::DragSensivity::Request& request,
                             dobot_v4_bringup::DragSensivity::Response& response)
 {
     return commander_->callRosService(parseTool::parserDragSensivityRequest2String(request), response.res);
 }
 
-bool CRRobot::GetDO(dobot_v4_bringup::GetDO::Request& request, dobot_v4_bringup::GetDO::Response& response)
+bool CRRobot::getDO(dobot_v4_bringup::GetDO::Request& request, dobot_v4_bringup::GetDO::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetDORequest2String(request), response.res);
 }
 
-bool CRRobot::GetAO(dobot_v4_bringup::GetAO::Request& request, dobot_v4_bringup::GetAO::Response& response)
+bool CRRobot::getAO(dobot_v4_bringup::GetAO::Request& request, dobot_v4_bringup::GetAO::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetAORequest2String(request), response.res);
 }
 
-bool CRRobot::GetDOGroup(dobot_v4_bringup::GetDOGroup::Request& request,
+bool CRRobot::getDOGroup(dobot_v4_bringup::GetDOGroup::Request& request,
                          dobot_v4_bringup::GetDOGroup::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetDOGroupRequest2String(request), response.res);
 }
 
-bool CRRobot::SetTool485(dobot_v4_bringup::SetTool485::Request& request,
+bool CRRobot::setTool485(dobot_v4_bringup::SetTool485::Request& request,
                          dobot_v4_bringup::SetTool485::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetTool485Request2String(request), response.res);
 }
 
-bool CRRobot::SetSafeWallEnable(dobot_v4_bringup::SetSafeWallEnable::Request& request,
+bool CRRobot::setSafeWallEnable(dobot_v4_bringup::SetSafeWallEnable::Request& request,
                                 dobot_v4_bringup::SetSafeWallEnable::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetSafeWallEnableRequest2String(request), response.res);
 }
 
-bool CRRobot::SetToolPower(dobot_v4_bringup::SetToolPower::Request& request,
+bool CRRobot::setToolPower(dobot_v4_bringup::SetToolPower::Request& request,
                            dobot_v4_bringup::SetToolPower::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetToolPowerRequest2String(request), response.res);
 }
 
-bool CRRobot::SetToolMode(dobot_v4_bringup::SetToolMode::Request& request,
+bool CRRobot::setToolMode(dobot_v4_bringup::SetToolMode::Request& request,
                           dobot_v4_bringup::SetToolMode::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetToolModeRequest2String(request), response.res);
 }
 
-bool CRRobot::SetBackDistance(dobot_v4_bringup::SetBackDistance::Request& request,
+bool CRRobot::setBackDistance(dobot_v4_bringup::SetBackDistance::Request& request,
                               dobot_v4_bringup::SetBackDistance::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetBackDistanceRequest2String(request), response.res);
 }
 
-bool CRRobot::SetPostCollisionMode(dobot_v4_bringup::SetPostCollisionMode::Request& request,
+bool CRRobot::setPostCollisionMode(dobot_v4_bringup::SetPostCollisionMode::Request& request,
                                    dobot_v4_bringup::SetPostCollisionMode::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetPostCollisionModeRequest2String(request), response.res);
 }
 
-bool CRRobot::SetUser(dobot_v4_bringup::SetUser::Request& request, dobot_v4_bringup::SetUser::Response& response)
+bool CRRobot::setUser(dobot_v4_bringup::SetUser::Request& request, dobot_v4_bringup::SetUser::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetUserRequest2String(request), response.res);
 }
 
-bool CRRobot::SetTool(dobot_v4_bringup::SetTool::Request& request, dobot_v4_bringup::SetTool::Response& response)
+bool CRRobot::setTool(dobot_v4_bringup::SetTool::Request& request, dobot_v4_bringup::SetTool::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetToolRequest2String(request), response.res);
 }
 
-bool CRRobot::CalcUser(dobot_v4_bringup::CalcUser::Request& request, dobot_v4_bringup::CalcUser::Response& response)
+bool CRRobot::calcUser(dobot_v4_bringup::CalcUser::Request& request, dobot_v4_bringup::CalcUser::Response& response)
 {
     return commander_->callRosService(parseTool::parserCalcUserRequest2String(request), response.res);
 }
 
-bool CRRobot::CalcTool(dobot_v4_bringup::CalcTool::Request& request, dobot_v4_bringup::CalcTool::Response& response)
+bool CRRobot::calcTool(dobot_v4_bringup::CalcTool::Request& request, dobot_v4_bringup::CalcTool::Response& response)
 {
     return commander_->callRosService(parseTool::parserCalcToolRequest2String(request), response.res);
 }
 
-bool CRRobot::GetInputBool(dobot_v4_bringup::GetInputBool::Request& request,
+bool CRRobot::getInputBool(dobot_v4_bringup::GetInputBool::Request& request,
                            dobot_v4_bringup::GetInputBool::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetInputboolRequest2String(request), response.res);
 }
 
-bool CRRobot::GetInputInt(dobot_v4_bringup::GetInputInt::Request& request,
+bool CRRobot::getInputInt(dobot_v4_bringup::GetInputInt::Request& request,
                           dobot_v4_bringup::GetInputInt::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetInputIntRequest2String(request), response.res);
 }
 
-bool CRRobot::GetInputFloat(dobot_v4_bringup::GetInputFloat::Request& request,
+bool CRRobot::getInputFloat(dobot_v4_bringup::GetInputFloat::Request& request,
                             dobot_v4_bringup::GetInputFloat::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetInputFloatRequest2String(request), response.res);
 }
 
-bool CRRobot::GetOutputBool(dobot_v4_bringup::GetOutputBool::Request& request,
+bool CRRobot::getOutputBool(dobot_v4_bringup::GetOutputBool::Request& request,
                             dobot_v4_bringup::GetOutputBool::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetOutputboolRequest2String(request), response.res);
 }
 
-bool CRRobot::GetOutputInt(dobot_v4_bringup::GetOutputInt::Request& request,
+bool CRRobot::getOutputInt(dobot_v4_bringup::GetOutputInt::Request& request,
                            dobot_v4_bringup::GetOutputInt::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetOutputIntRequest2String(request), response.res);
 }
 
-bool CRRobot::GetOutputFloat(dobot_v4_bringup::GetOutputFloat::Request& request,
+bool CRRobot::getOutputFloat(dobot_v4_bringup::GetOutputFloat::Request& request,
                              dobot_v4_bringup::GetOutputFloat::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetOutputFloatRequest2String(request), response.res);
 }
 
-bool CRRobot::SetOutputBool(dobot_v4_bringup::SetOutputBool::Request& request,
+bool CRRobot::setOutputBool(dobot_v4_bringup::SetOutputBool::Request& request,
                             dobot_v4_bringup::SetOutputBool::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetOutputboolRequest2String(request), response.res);
 }
 
-bool CRRobot::SetOutputInt(dobot_v4_bringup::SetOutputInt::Request& request,
+bool CRRobot::setOutputInt(dobot_v4_bringup::SetOutputInt::Request& request,
                            dobot_v4_bringup::SetOutputInt::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetOutputIntRequest2String(request), response.res);
 }
 
-bool CRRobot::SetOutputFloat(dobot_v4_bringup::SetOutputFloat::Request& request,
+bool CRRobot::setOutputFloat(dobot_v4_bringup::SetOutputFloat::Request& request,
                              dobot_v4_bringup::SetOutputFloat::Response& response)
 {
     return commander_->callRosService(parseTool::parserSetOutputFloatRequest2String(request), response.res);
@@ -831,22 +831,22 @@ bool CRRobot::movL(dobot_v4_bringup::MovL::Request& request, dobot_v4_bringup::M
     return commander_->callRosService(parseTool::parsermovLRequest2String(request), response.res);
 }
 
-bool CRRobot::MovLIO(dobot_v4_bringup::MovLIO::Request& request, dobot_v4_bringup::MovLIO::Response& response)
+bool CRRobot::movLIO(dobot_v4_bringup::MovLIO::Request& request, dobot_v4_bringup::MovLIO::Response& response)
 {
     return commander_->callRosService(parseTool::parserMovLIORequest2String(request), response.res);
 }
 
-bool CRRobot::MovJIO(dobot_v4_bringup::MovJIO::Request& request, dobot_v4_bringup::MovJIO::Response& response)
+bool CRRobot::movJIO(dobot_v4_bringup::MovJIO::Request& request, dobot_v4_bringup::MovJIO::Response& response)
 {
     return commander_->callRosService(parseTool::parserMovJIORequest2String(request), response.res);
 }
 
-bool CRRobot::Arc(dobot_v4_bringup::Arc::Request& request, dobot_v4_bringup::Arc::Response& response)
+bool CRRobot::arc(dobot_v4_bringup::Arc::Request& request, dobot_v4_bringup::Arc::Response& response)
 {
     return commander_->callRosService(parseTool::parserArcRequest2String(request), response.res);
 }
 
-bool CRRobot::Circle(dobot_v4_bringup::Circle::Request& request, dobot_v4_bringup::Circle::Response& response)
+bool CRRobot::circle(dobot_v4_bringup::Circle::Request& request, dobot_v4_bringup::Circle::Response& response)
 {
     return commander_->callRosService(parseTool::parserCircleRequest2String(request), response.res);
 }
@@ -862,25 +862,25 @@ bool CRRobot::stopmoveJog(dobot_v4_bringup::StopMoveJog::Request& request,
     return commander_->callRosService(parseTool::parserStopmoveJogRequest2String(request), response.res);
 }
 
-bool CRRobot::RelMovJTool(dobot_v4_bringup::RelMovJTool::Request& request,
+bool CRRobot::relMovJTool(dobot_v4_bringup::RelMovJTool::Request& request,
                           dobot_v4_bringup::RelMovJTool::Response& response)
 {
     return commander_->callRosService(parseTool::parserRelMovJToolRequest2String(request), response.res);
 }
 
-bool CRRobot::RelMovLTool(dobot_v4_bringup::RelMovLTool::Request& request,
+bool CRRobot::relMovLTool(dobot_v4_bringup::RelMovLTool::Request& request,
                           dobot_v4_bringup::RelMovLTool::Response& response)
 {
     return commander_->callRosService(parseTool::parserRelMovLToolRequest2String(request), response.res);
 }
 
-bool CRRobot::RelMovJUser(dobot_v4_bringup::RelMovJUser::Request& request,
+bool CRRobot::relMovJUser(dobot_v4_bringup::RelMovJUser::Request& request,
                           dobot_v4_bringup::RelMovJUser::Response& response)
 {
     return commander_->callRosService(parseTool::parserRelMovJUserRequest2String(request), response.res);
 }
 
-bool CRRobot::RelMovLUser(dobot_v4_bringup::RelMovLUser::Request& request,
+bool CRRobot::relMovLUser(dobot_v4_bringup::RelMovLUser::Request& request,
                           dobot_v4_bringup::RelMovLUser::Response& response)
 {
     return commander_->callRosService(parseTool::parserRelMovLUserRequest2String(request), response.res);
@@ -892,18 +892,18 @@ bool CRRobot::relJointMovJ(dobot_v4_bringup::RelJointMovJ::Request& request,
     return commander_->callRosService(parseTool::parserrelJointMovJRequest2String(request), response.res);
 }
 
-bool CRRobot::GetCurrentCommandId(dobot_v4_bringup::GetCurrentCommandId::Request& request,
+bool CRRobot::getCurrentCommandId(dobot_v4_bringup::GetCurrentCommandId::Request& request,
                                   dobot_v4_bringup::GetCurrentCommandId::Response& response)
 {
     return commander_->callRosService(parseTool::parserGetCurrentCommandIdRequest2String(request), response.res);
 }
 
-bool CRRobot::ServoJ(dobot_v4_bringup::ServoJ::Request& request, dobot_v4_bringup::ServoJ::Response& response)
+bool CRRobot::servoJ(dobot_v4_bringup::ServoJ::Request& request, dobot_v4_bringup::ServoJ::Response& response)
 {
     return commander_->callRosService(parseTool::parserServoJRequest2String(request), response.res);
 }
 
-bool CRRobot::ServoP(dobot_v4_bringup::ServoP::Request& request, dobot_v4_bringup::ServoP::Response& response)
+bool CRRobot::servoP(dobot_v4_bringup::ServoP::Request& request, dobot_v4_bringup::ServoP::Response& response)
 {
     return commander_->callRosService(parseTool::parserServoPRequest2String(request), response.res);
 }
@@ -985,7 +985,7 @@ void CRRobot::backendTask(const ros::TimerEvent& e)
     if (robot_mode == 9 && last_robot_mode_ != 9) {
         dobot_v4_bringup::GetErrorID::Request req = {};
         dobot_v4_bringup::GetErrorID::Response res = {};
-        bool ok = getErrorID(req, res);
+        bool ok = GetErrorID(req, res);
         if (ok) {
             for (const auto& i : res.error_id) {
                 ROS_ERROR("Robot alarm, error id %d", i);
