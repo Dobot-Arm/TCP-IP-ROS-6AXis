@@ -527,7 +527,7 @@ roslaunch dobot_moveit moveit.launch
 
 4.  异常处理线程：对机器异常状态进行判断和处理动作
 
-![](/exception.png)
+![](/excetion.png)
 
 
 
@@ -536,7 +536,7 @@ roslaunch dobot_moveit moveit.launch
 1. 从GitHub 获取越疆dobot  TCP-IP-CR-Python-V4 二次开发Api程序
 
    ```bash
-   `git clone https://github.com/Dobot-Arm/TCP-IP-CR-Python-V4.git
+   `git clone https://github.com/Dobot-Arm/TCP-IP-ROS-6AXis.git
    ```
 
 2. 通过LAN1网口-连接机器端，设置本机机器IP地址为192.168.5.X  网段
@@ -559,11 +559,6 @@ roslaunch dobot_moveit moveit.launch
 
    ![](/checkTcpMode.png)
 
-   
-
-4. 运行程序，需要检测搜索到动态库，在VsCode/PyCharm中打开整个目录，直接运行 main.py。  
-
-   ![](/runpy.png)
 
 
 
