@@ -106,13 +106,10 @@
 #include <dobot_bringup/RelMovJUser.h>
 #include <dobot_bringup/RelMovLUser.h>
 #include <dobot_bringup/StopmoveJog.h>
-// #include <dobot_bringup/SyncAll.h>
 #include <dobot_bringup/Wait.h>
 #include <dobot_bringup/Continues.h>
 #include <dobot_bringup/pause.h>
 #include <dobot_bringup/RelJointMovJ.h>
-
-// #include <dobot_bringup/SetHoldRegs.h>
 #include <dobot_bringup/TcpRealData.h>
 #include <dobot_bringup/TcpDashboard.h>
 
