@@ -25,6 +25,7 @@ CR5Robot::CR5Robot(ros::NodeHandle& nh, std::string name)
 {
     index_ = 0;
     memset(goal_, 0, sizeof(goal_));
+    kServoJParam = std::make_shared<ServoJParam>();
 }
 
 CR5Robot::~CR5Robot()
@@ -162,6 +163,8 @@ void CR5Robot::init()
     server_tbl_.push_back(
         control_nh_.advertiseService("/dobot_bringup/srv/TcpDashboard", &CR5Robot::tcpDashboard, this));
     server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/TcpRealData", &CR5Robot::tcpRealData, this));
+
+    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoJParam", &CR5Robot::servoJParam, this));
     registerGoalCallback(boost::bind(&CR5Robot::goalHandle, this, _1));
     registerCancelCallback(boost::bind(&CR5Robot::cancelHandle, this, _1));
 
@@ -235,6 +238,13 @@ void CR5Robot::moveHandle(const ros::TimerEvent& tm,
         srv.request.offset4 = tmp[3];
         srv.request.offset5 = tmp[4];
         srv.request.offset6 = tmp[5];
+        if (kServoJParam && kServoJParam->trajectory_duration != 0.0) {
+            srv.request.t.push_back(kServoJParam->t);
+            srv.request.lookahead_time.push_back(kServoJParam->lookahead_time);
+            srv.request.gain.push_back(kServoJParam->gain);
+            movj_timer_ = control_nh_.createTimer(ros::Duration(kServoJParam->trajectory_duration),
+                                                  boost::bind(&CR5Robot::moveHandle, this, _1, handle));
+        }
         servoJ(srv.request, srv.response);
         index_++;
     } else {
@@ -1084,6 +1094,26 @@ bool CR5Robot::tCPSpeedEnd(dobot_bringup::TCPSpeedEnd::Request& request, dobot_b
  *                                                  real time
  *----------------------------------------------------------------------------------------------------------------------
  */
+
+bool CR5Robot::servoJParam(dobot_bringup::ServoJParam::Request& request, dobot_bringup::ServoJParam::Response& response)
+{
+    try {
+        if (kServoJParam) {
+            kServoJParam->trajectory_duration = request.trajectory_duration;
+            kServoJParam->t = request.t;
+            kServoJParam->lookahead_time = request.lookahead_time;
+            kServoJParam->gain = request.gain;
+            ROS_INFO("Set ServoJParam- trajectory_duratio: %f, t:%f, lookahead_time:%f, gain:%f ",
+                     kServoJParam->trajectory_duration, kServoJParam->t, kServoJParam->lookahead_time,
+                     kServoJParam->gain);
+            response.res = 0;
+        }
+    } catch (const std::exception& err) {
+        ROS_ERROR("Caught exception: %s", err.what());
+        response.res = -1;
+    }
+    return true;
+}
 
 bool CR5Robot::tcpRealData(dobot_bringup::TcpRealData::Request& request, dobot_bringup::TcpRealData::Response& response)
 {

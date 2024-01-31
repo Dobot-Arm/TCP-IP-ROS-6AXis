@@ -148,6 +148,7 @@ add_service_files(
         Circle.srv
         ServoJ.srv
         ServoP.srv
+        ServoJParam.srv
         Sync.srv
         SyncAll.srv
         StartTrace.srv

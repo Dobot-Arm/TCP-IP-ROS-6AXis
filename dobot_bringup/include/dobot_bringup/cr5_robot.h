@@ -68,11 +68,12 @@
 #include <dobot_bringup/Sync.h>
 #include <dobot_bringup/Circle.h>
 #include <dobot_bringup/ServoJ.h>
+#include <dobot_bringup/ServoP.h>
+#include <dobot_bringup/ServoJParam.h>
 #include <dobot_bringup/StartTrace.h>
 #include <dobot_bringup/StartPath.h>
 #include <dobot_bringup/StartFCTrace.h>
 #include <dobot_bringup/MoveJog.h>
-#include <dobot_bringup/ServoP.h>
 #include <dobot_bringup/RelMovJ.h>
 #include <dobot_bringup/RelMovL.h>
 #include <dobot_bringup/JointMovJ.h>
@@ -116,6 +117,14 @@
 using namespace actionlib;
 using namespace control_msgs;
 
+struct ServoJParam
+{
+    double trajectory_duration = 0.0;
+    double t = 0.0;
+    double lookahead_time = 0.0;
+    double gain = 0.0;
+};
+
 /**
  * CR5Robot
  */
@@ -134,6 +143,7 @@ private:
     uint16_t last_robot_mode_;
     std::thread threadPubFeedBackInfo;
     ros::Publisher pubFeedInfo;
+    std::shared_ptr<ServoJParam> kServoJParam;
 
 public:
     /**
@@ -293,6 +303,7 @@ protected:
 
     bool tcpRealData(dobot_bringup::TcpRealData::Request& request, dobot_bringup::TcpRealData::Response& response);
     bool tcpDashboard(dobot_bringup::TcpDashboard::Request& request, dobot_bringup::TcpDashboard::Response& response);
+    bool servoJParam(dobot_bringup::ServoJParam::Request& request, dobot_bringup::ServoJParam::Response& response);
 
 private:
     static int str2Int(const char* val);
