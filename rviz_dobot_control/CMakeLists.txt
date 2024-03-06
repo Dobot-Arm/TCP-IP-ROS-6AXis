@@ -139,9 +139,6 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-# 添加子目录指向 JSON 库源代码的路径
-# add_subdirectory(json)
-
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
         src/rviz_dobot_control.cpp
@@ -168,7 +165,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES} nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##

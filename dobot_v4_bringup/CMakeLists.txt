@@ -219,9 +219,6 @@ include_directories(
 #   src/${PROJECT_NAME}/dobot_v4_bringup.cpp
 # )
 
-# # 添加子目录指向 JSON 库源代码的路径
-# add_subdirectory(json)
-
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -250,7 +247,6 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  nlohmann_json::nlohmann_json
 )
 
 #############
