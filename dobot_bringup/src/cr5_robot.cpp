@@ -1497,7 +1497,7 @@ bool CR5Robot::servoJ(dobot_bringup::ServoJ::Request& request, dobot_bringup::Se
     try {
         char cmd[100];
         if (request.t.empty()) {
-            sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f)", request.offset1, request.offset2,
+            sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=0.4)", request.offset1, request.offset2,
                     request.offset3, request.offset4, request.offset5, request.offset6);
         } else {
             sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f)", request.offset1,
