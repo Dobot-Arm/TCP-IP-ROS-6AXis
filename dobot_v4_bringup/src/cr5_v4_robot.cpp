@@ -528,7 +528,7 @@ void CRRobot::moveHandle(const ros::TimerEvent& tm,
 {
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = handle.getGoal();
 
-    static const double SERVOJ_DURATION = 0.08;
+    static const double SERVOJ_DURATION = 0.4;
     double t = SERVOJ_DURATION * 1.5;
     ros::Rate timer(1.0 / SERVOJ_DURATION);    // servoj发布频率
     double t0 = ros::Time::now().toSec();
