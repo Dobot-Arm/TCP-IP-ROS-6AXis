@@ -132,7 +132,7 @@ catkin_make
 ### 设置环境变量
 
 ```
-source $HOME/catkin_ws/devel/setup.bash
+echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 ```
 
 
