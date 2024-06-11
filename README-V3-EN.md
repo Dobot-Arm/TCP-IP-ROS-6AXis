@@ -109,7 +109,7 @@ catkin_make
 ### Set environment variable
 
 ```
-source $HOME/catkin_ws/devel/setup.bash
+echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 ```
 
 ### If it is a CR3 robot, please type the following commands
