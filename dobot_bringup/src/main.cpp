@@ -22,36 +22,33 @@
 using namespace std;
 int main(int argc, char* argv[])
 {
-    ros::init(argc, argv, "CR5Robot");
+    const char* robot_type = getenv("DOBOT_TYPE");
+    string robot_type_str = (robot_type == nullptr ? "cr5" : robot_type) + "Robot";
+    ros::init(argc, argv, robot_type_str);
 
     try
     {
-        ros::NodeHandle node;
         ros::NodeHandle private_node("~");
 
         ros::AsyncSpinner async_spinner(1);
         async_spinner.start();
 
         sensor_msgs::JointState joint_state_msg;
-        ros::Publisher joint_state_pub = private_node.advertise<sensor_msgs::JointState>("/joint_states", 100);
+        ros::Publisher joint_state_pub = private_node.advertise<sensor_msgs::JointState>("joint_states", 100);
         dobot_bringup::RobotStatus robot_status_msg;
-        ros::Publisher robot_status_pub = private_node.advertise<dobot_bringup::RobotStatus>("/dobot_bringup/msg/RobotStatus", 100);
+        ros::Publisher robot_status_pub = private_node.advertise<dobot_bringup::RobotStatus>("dobot_bringup/msg/RobotStatus", 100);
 
         dobot_bringup::ToolVectorActual tool_vector_actual_msg;
         ros::Publisher tool_vector_pub =
-            private_node.advertise<dobot_bringup::ToolVectorActual>("/dobot_bringup/msg/ToolVectorActual", 100);
-        string z ="/";
-        const char* robot_type = getenv("DOBOT_TYPE");
-        string a = robot_type == nullptr ? "cr5" : robot_type;
-        string b = "_robot/joint_controller/follow_joint_trajectory";
-        string ss =  z + a+ b ;
+            private_node.advertise<dobot_bringup::ToolVectorActual>("dobot_bringup/msg/ToolVectorActual", 100);
+        
         for (uint32_t i = 0; i < 6; i++)
         {
             joint_state_msg.position.push_back(0.0);
             joint_state_msg.name.push_back(std::string("joint") + std::to_string(i + 1));
         }
 
-        CR5Robot robot(private_node, ss);
+        CR5Robot robot(private_node, "joint_controller/follow_joint_trajectory");
 
         double rate_vale = private_node.param("JointStatePublishRate", 10);
 

@@ -44,133 +44,133 @@ void CR5Robot::init()
     commander_ = std::make_shared<CR5Commander>(ip);
     commander_->init();
 
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/EnableRobot", &CR5Robot::enableRobot, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/EnableRobot", &CR5Robot::enableRobot, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/DisableRobot", &CR5Robot::disableRobot, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ClearError", &CR5Robot::clearError, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ResetRobot", &CR5Robot::resetRobot, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SpeedFactor", &CR5Robot::speedFactor, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetErrorID", &CR5Robot::getErrorID, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/User", &CR5Robot::user, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Tool", &CR5Robot::tool, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RobotMode", &CR5Robot::robotMode, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/PayLoad", &CR5Robot::payload, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/DO", &CR5Robot::DO, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/DOExecute", &CR5Robot::DOExecute, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ToolDO", &CR5Robot::toolDO, this));
+        control_nh_.advertiseService("dobot_bringup/srv/DisableRobot", &CR5Robot::disableRobot, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ClearError", &CR5Robot::clearError, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ResetRobot", &CR5Robot::resetRobot, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SpeedFactor", &CR5Robot::speedFactor, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetErrorID", &CR5Robot::getErrorID, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/User", &CR5Robot::user, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Tool", &CR5Robot::tool, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RobotMode", &CR5Robot::robotMode, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/PayLoad", &CR5Robot::payload, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/DO", &CR5Robot::DO, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/DOExecute", &CR5Robot::DOExecute, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ToolDO", &CR5Robot::toolDO, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/ToolDOExecute", &CR5Robot::toolDOExecute, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/AO", &CR5Robot::AO, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/AOExecute", &CR5Robot::AOExecute, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/AccJ", &CR5Robot::accJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/AccL", &CR5Robot::accL, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SpeedJ", &CR5Robot::speedJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SpeedL", &CR5Robot::speedL, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Arch", &CR5Robot::arch, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/CP", &CR5Robot::cp, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/LimZ", &CR5Robot::limZ, this));
+        control_nh_.advertiseService("dobot_bringup/srv/ToolDOExecute", &CR5Robot::toolDOExecute, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/AO", &CR5Robot::AO, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/AOExecute", &CR5Robot::AOExecute, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/AccJ", &CR5Robot::accJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/AccL", &CR5Robot::accL, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SpeedJ", &CR5Robot::speedJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SpeedL", &CR5Robot::speedL, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Arch", &CR5Robot::arch, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/CP", &CR5Robot::cp, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/LimZ", &CR5Robot::limZ, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetArmOrientation", &CR5Robot::setArmOrientation, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetPayload", &CR5Robot::setPayload, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetArmOrientation", &CR5Robot::setArmOrientation, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SetPayload", &CR5Robot::setPayload, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/PositiveSolution", &CR5Robot::positiveSolution, this));
+        control_nh_.advertiseService("dobot_bringup/srv/PositiveSolution", &CR5Robot::positiveSolution, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/InverseSolution", &CR5Robot::inverseSolution, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/PowerOn", &CR5Robot::powerOn, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RunScript", &CR5Robot::runScript, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StopScript", &CR5Robot::stopScript, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/PauseScript", &CR5Robot::pauseScript, this));
+        control_nh_.advertiseService("dobot_bringup/srv/InverseSolution", &CR5Robot::inverseSolution, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/PowerOn", &CR5Robot::powerOn, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RunScript", &CR5Robot::runScript, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StopScript", &CR5Robot::stopScript, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/PauseScript", &CR5Robot::pauseScript, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/ContinueScript", &CR5Robot::continueScript, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetSafeSkin", &CR5Robot::setSafeSkin, this));
+        control_nh_.advertiseService("dobot_bringup/srv/ContinueScript", &CR5Robot::continueScript, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SetSafeSkin", &CR5Robot::setSafeSkin, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetObstacleAvoid", &CR5Robot::setObstacleAvoid, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetObstacleAvoid", &CR5Robot::setObstacleAvoid, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/GetTraceStartPose", &CR5Robot::getTraceStartPose, this));
+        control_nh_.advertiseService("dobot_bringup/srv/GetTraceStartPose", &CR5Robot::getTraceStartPose, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetCollisionLevel", &CR5Robot::setCollisionLevel, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetAngle", &CR5Robot::getAngle, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetPose", &CR5Robot::getPose, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetCollisionLevel", &CR5Robot::setCollisionLevel, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetAngle", &CR5Robot::getAngle, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetPose", &CR5Robot::getPose, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/GetPathStartPose", &CR5Robot::getPathStartPose, this));
+        control_nh_.advertiseService("dobot_bringup/srv/GetPathStartPose", &CR5Robot::getPathStartPose, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/HandleTrajPoints", &CR5Robot::handleTrajPoints, this));
+        control_nh_.advertiseService("dobot_bringup/srv/HandleTrajPoints", &CR5Robot::handleTrajPoints, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/GetSixForceData", &CR5Robot::getSixForceData, this));
+        control_nh_.advertiseService("dobot_bringup/srv/GetSixForceData", &CR5Robot::getSixForceData, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetCollideDrag", &CR5Robot::setCollideDrag, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetCollideDrag", &CR5Robot::setCollideDrag, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetTerminalKeys", &CR5Robot::setTerminalKeys, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetTerminalKeys", &CR5Robot::setTerminalKeys, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/SetTerminal485", &CR5Robot::setTerminal485, this));
+        control_nh_.advertiseService("dobot_bringup/srv/SetTerminal485", &CR5Robot::setTerminal485, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/GetTerminal485", &CR5Robot::getTerminal485, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/TCPSpeed", &CR5Robot::tCPSpeed, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/TCPSpeedEnd", &CR5Robot::tCPSpeedEnd, this));
+        control_nh_.advertiseService("dobot_bringup/srv/GetTerminal485", &CR5Robot::getTerminal485, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/TCPSpeed", &CR5Robot::tCPSpeed, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/TCPSpeedEnd", &CR5Robot::tCPSpeedEnd, this));
 
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/EmergencyStop", &CR5Robot::emergencyStop, this));
+        control_nh_.advertiseService("dobot_bringup/srv/EmergencyStop", &CR5Robot::emergencyStop, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/ModbusCreate", &CR5Robot::modbusCreate, this));
+        control_nh_.advertiseService("dobot_bringup/srv/ModbusCreate", &CR5Robot::modbusCreate, this));
 
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MovJ", &CR5Robot::movJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MovL", &CR5Robot::movL, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/JointMovJ", &CR5Robot::jointMovJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Jump", &CR5Robot::jump, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovJ", &CR5Robot::relMovJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovL", &CR5Robot::relMovL, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MovLIO", &CR5Robot::movLIO, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MovJIO", &CR5Robot::movJIO, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Arc", &CR5Robot::arc, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Circle", &CR5Robot::circle3, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovJTool", &CR5Robot::relMovJTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovLTool", &CR5Robot::relMovLTool, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovJUser", &CR5Robot::relMovJUser, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/RelMovLUser", &CR5Robot::relMovLUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/MovJ", &CR5Robot::movJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/MovL", &CR5Robot::movL, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/JointMovJ", &CR5Robot::jointMovJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Jump", &CR5Robot::jump, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovJ", &CR5Robot::relMovJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovL", &CR5Robot::relMovL, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/MovLIO", &CR5Robot::movLIO, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/MovJIO", &CR5Robot::movJIO, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Arc", &CR5Robot::arc, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Circle", &CR5Robot::circle3, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovJTool", &CR5Robot::relMovJTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovLTool", &CR5Robot::relMovLTool, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovJUser", &CR5Robot::relMovJUser, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/RelMovLUser", &CR5Robot::relMovLUser, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/RelJointMovJ", &CR5Robot::relJointMovJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoJ", &CR5Robot::servoJ, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoP", &CR5Robot::servoP, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Sync", &CR5Robot::sync, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StartTrace", &CR5Robot::startTrace, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StartPath", &CR5Robot::startPath, this));
+        control_nh_.advertiseService("dobot_bringup/srv/RelJointMovJ", &CR5Robot::relJointMovJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ServoJ", &CR5Robot::servoJ, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ServoP", &CR5Robot::servoP, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Sync", &CR5Robot::sync, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StartTrace", &CR5Robot::startTrace, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StartPath", &CR5Robot::startPath, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/StartFCTrace", &CR5Robot::startFCTrace, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/MoveJog", &CR5Robot::moveJog, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StopmoveJog", &CR5Robot::stopmoveJog, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Wait", &CR5Robot::wait, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Continue", &CR5Robot::Continue, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/Pause", &CR5Robot::pause, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ModbusClose", &CR5Robot::modbusClose, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetInBits", &CR5Robot::getInBits, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetInRegs", &CR5Robot::getInRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetHoldRegs", &CR5Robot::getHoldRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetHoldRegs", &CR5Robot::setHoldRegs, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/GetCoils", &CR5Robot::getCoils, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/SetCoils", &CR5Robot::setCoils, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ToolDI", &CR5Robot::toolDI, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/DI", &CR5Robot::DI, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ToolAI", &CR5Robot::toolAI, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/AI", &CR5Robot::AI, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/DIGroup", &CR5Robot::DIGroup, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/DOGroup", &CR5Robot::DOGroup, this));
+        control_nh_.advertiseService("dobot_bringup/srv/StartFCTrace", &CR5Robot::startFCTrace, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/MoveJog", &CR5Robot::moveJog, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StopmoveJog", &CR5Robot::stopmoveJog, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Wait", &CR5Robot::wait, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Continue", &CR5Robot::Continue, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/Pause", &CR5Robot::pause, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ModbusClose", &CR5Robot::modbusClose, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetInBits", &CR5Robot::getInBits, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetInRegs", &CR5Robot::getInRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetHoldRegs", &CR5Robot::getHoldRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SetHoldRegs", &CR5Robot::setHoldRegs, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/GetCoils", &CR5Robot::getCoils, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/SetCoils", &CR5Robot::setCoils, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ToolDI", &CR5Robot::toolDI, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/DI", &CR5Robot::DI, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ToolAI", &CR5Robot::toolAI, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/AI", &CR5Robot::AI, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/DIGroup", &CR5Robot::DIGroup, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/DOGroup", &CR5Robot::DOGroup, this));
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/BrakeControl", &CR5Robot::brakeControl, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StartDrag", &CR5Robot::startDrag, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/StopDrag", &CR5Robot::stopDrag, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/LoadSwitch", &CR5Robot::loadSwitch, this));
+        control_nh_.advertiseService("dobot_bringup/srv/BrakeControl", &CR5Robot::brakeControl, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StartDrag", &CR5Robot::startDrag, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/StopDrag", &CR5Robot::stopDrag, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/LoadSwitch", &CR5Robot::loadSwitch, this));
 
     server_tbl_.push_back(
-        control_nh_.advertiseService("/dobot_bringup/srv/TcpDashboard", &CR5Robot::tcpDashboard, this));
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/TcpRealData", &CR5Robot::tcpRealData, this));
+        control_nh_.advertiseService("dobot_bringup/srv/TcpDashboard", &CR5Robot::tcpDashboard, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/TcpRealData", &CR5Robot::tcpRealData, this));
 
-    server_tbl_.push_back(control_nh_.advertiseService("/dobot_bringup/srv/ServoJParam", &CR5Robot::servoJParam, this));
+    server_tbl_.push_back(control_nh_.advertiseService("dobot_bringup/srv/ServoJParam", &CR5Robot::servoJParam, this));
     registerGoalCallback(boost::bind(&CR5Robot::goalHandle, this, _1));
     registerCancelCallback(boost::bind(&CR5Robot::cancelHandle, this, _1));
 
     backend_task_ = control_nh_.createTimer(ros::Duration(1.5), &CR5Robot::backendTask, this);
 
-    pubFeedInfo = control_nh_.advertise<std_msgs::String>("/dobot_bringup/msg/FeedInfo", 1000);
+    pubFeedInfo = control_nh_.advertise<std_msgs::String>("dobot_bringup/msg/FeedInfo", 1000);
     threadPubFeedBackInfo = std::thread(&CR5Robot::pubFeedBackInfo, this);
     threadPubFeedBackInfo.detach();
     start();
