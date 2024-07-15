@@ -59,7 +59,6 @@ TCP-IP-ROS-6AXis是为 dobot 公司旗下基于TCP/IP协议的ROS的封装设计
 
 在使用过程中如遇问题或者一些建议， 您可以通过以下方式获取Dobot的技术支持 :
 
-* 发送邮件到 futingxing@dobot-robots.com，详细描述您遇到的问题和使用场景
 * 发送邮件到 wuyongfeng@dobot-robots.com ，详细描述您遇到的问题和使用场景
 
 
