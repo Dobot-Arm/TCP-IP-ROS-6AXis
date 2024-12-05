@@ -38,11 +38,11 @@ void RosDemoCRV4::getFeedBackInfo(const std_msgs::String::ConstPtr& msg)
     if (parsedJson.count("ErrorStatus") && parsedJson["ErrorStatus"].is_number()) {
         feedbackData.ErrorStatus = parsedJson["ErrorStatus"];
     }
-    if (parsedJson.count("RobotMode") && parsedJson["RobotMode"].is_number()) {
-        feedbackData.RobotMode = parsedJson["RobotMode"];
+    if (parsedJson.count("robot_mode") && parsedJson["robot_mode"].is_number()) {
+        feedbackData.RobotMode = parsedJson["robot_mode"];
     }
-    if (parsedJson.count("CurrentCommandID") && parsedJson["CurrentCommandID"].is_number()) {
-        feedbackData.CurrentCommandID = parsedJson["CurrentCommandID"];
+    if (parsedJson.count("currentCommandId") && parsedJson["currentCommandId"].is_number()) {
+        feedbackData.CurrentCommandID = parsedJson["currentCommandId"];
     }
 }
 
