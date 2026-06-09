@@ -66,9 +66,9 @@ void TcpClient::disConnect()
 {
     if (is_connected_)
     {
-        fd_ = -1;
+        ::close(fd_);       // 先真正关闭socket
+        fd_ = -1;           // 然后设置无效标记
         is_connected_ = false;
-        ::close(fd_);
     }
 }
 
@@ -100,7 +100,7 @@ void TcpClient::tcpSend(const void* buf, uint32_t len)
 
 bool TcpClient::tcpRecv(void* buf, uint32_t len, uint32_t& has_read, uint32_t timeout)
 {
-    uint8_t* tmp = (uint8_t*)buf;    // NOLINT(modernize-use-auto)
+    uint8_t* tmp = (uint8_t*)buf;
 
     fd_set read_fds;
     timeval tv = { 0, 0 };
@@ -138,7 +138,7 @@ bool TcpClient::tcpRecv(void* buf, uint32_t len, uint32_t& has_read, uint32_t ti
         len -= err;
         tmp += (err - 1);
 
-        if(tmp[0] == ';'){ 
+        if(tmp[0] == ';'){
             has_read += err;
             return true;
         }

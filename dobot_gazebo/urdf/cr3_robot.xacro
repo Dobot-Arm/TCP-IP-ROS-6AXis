@@ -105,8 +105,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14"
-      upper="3.14"
+      lower="-6.28"
+      upper="6.28"
       effort="300"
       velocity="100" />
   </joint>
@@ -163,8 +163,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14"
-      upper="3.14"
+      lower="-6.28"
+      upper="6.28"
       effort="300"
       velocity="100" />
   </joint>
@@ -221,8 +221,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-2.86"
-      upper="2.86"
+      lower="-2.705"
+      upper="2.705"
       effort="300"
       velocity="100" />
   </joint>
@@ -279,8 +279,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14"
-      upper="3.14"
+      lower="-6.28"
+      upper="6.28"
       effort="300"
       velocity="100" />
   </joint>
@@ -337,8 +337,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14"
-      upper="3.14"
+      lower="-6.28"
+      upper="6.28"
       effort="300"
       velocity="100" />
   </joint>
@@ -402,31 +402,38 @@
   </joint>
 
 
- <xacro:macro name="cr3_transmission" params="joint_name">
-     <transmission name="${joint_name}_trans">
-       <type>transmission_interface/SimpleTransmission</type>
-       <joint name="${joint_name}">
-         <!--<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>-->
-         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-       </joint>
-       <actuator name="${joint_name}_motor">
-         <mechanicalReduction>1</mechanicalReduction>
-       </actuator>
-     </transmission>
- </xacro:macro>
+ <!-- Disable physics for all links -->
+  <gazebo reference="base_link">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link1">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link2">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link3">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link4">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link5">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link6">
+    <kinematic>true</kinematic>
+  </gazebo>
 
- <xacro:cr3_transmission joint_name="joint1"/>
- <xacro:cr3_transmission joint_name="joint2"/>
- <xacro:cr3_transmission joint_name="joint3"/>
- <xacro:cr3_transmission joint_name="joint4"/>
- <xacro:cr3_transmission joint_name="joint5"/>
- <xacro:cr3_transmission joint_name="joint6"/>
- <!-- ros_control plugin -->
+  <!-- JointPoseTrajectory plugin - no physics simulation, direct joint positioning -->
  <gazebo>
-     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-         <robotNamespace>/cr3_robot</robotNamespace>
-     </plugin>
- </gazebo>
+    <plugin name="joint_pose_trajectory_plugin" filename="libgazebo_ros_joint_pose_trajectory.so">
+      <topic>/set_joint_trajectory</topic>
+      <updateRate>100</updateRate>
+      <interpolateX>true</interpolateX>
+      <frame_id>Link6</frame_id>
+    </plugin>
+  </gazebo>
 
 
 

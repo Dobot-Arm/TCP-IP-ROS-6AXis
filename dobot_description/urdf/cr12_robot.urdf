@@ -155,7 +155,7 @@
     type="revolute">
     <origin
       xyz="0 0 0"
-      rpy="-1.57079631189374 1.57079631189374 3.14159265358979" />
+      rpy="1.5708 1.5708 0" />
     <parent
       link="Link1" />
     <child
@@ -163,8 +163,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-6.28"
-      upper="6.28"
+      lower="-3.14"
+      upper="3.14"
       effort="0"
       velocity="0" />
   </joint>
@@ -271,7 +271,7 @@
     type="revolute">
     <origin
       xyz="-0.518 0 0.125"
-      rpy="0 0 -1.5707963267949" />
+      rpy="0 0 -1.5708" />
     <parent
       link="Link3" />
     <child
@@ -279,8 +279,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-6.28"
-      upper="6.28"
+      lower="-3.14"
+      upper="3.14"
       effort="0"
       velocity="0" />
   </joint>
@@ -329,16 +329,16 @@
     type="revolute">
     <origin
       xyz="0 -0.125 0"
-      rpy="1.5707963267949 0 0" />
+      rpy="1.5708 0 0" />
     <parent
       link="Link4" />
     <child
       link="Link5" />
     <axis
-      xyz="0 0 0.999999999998195" />
+      xyz="0 0 1" />
     <limit
-      lower="-6.28"
-      upper="6.28"
+      lower="-3.14"
+      upper="3.14"
       effort="0"
       velocity="0" />
   </joint>

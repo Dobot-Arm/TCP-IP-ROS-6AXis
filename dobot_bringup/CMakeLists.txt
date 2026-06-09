@@ -116,7 +116,6 @@ add_service_files(
         DOGroup.srv
 
         pause.srv
-        User.srv
         Wait.srv
         MovJExt.srv
         ModbusCreate.srv

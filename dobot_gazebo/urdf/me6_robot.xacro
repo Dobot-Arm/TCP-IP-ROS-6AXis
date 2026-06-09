@@ -58,7 +58,7 @@
         <parent link="base_link" />
         <child link="Link1" />
         <axis xyz="0 0 1" />
-        <limit lower="-6.28" upper="6.28" effort="300" velocity="300" />
+        <limit lower="-6.283" upper="6.283" effort="300" velocity="300" />
     </joint>
     <link name="Link2">
         
@@ -213,7 +213,7 @@
         <parent link="Link5" />
         <child link="Link6" />
         <axis xyz="0 0 1" />
-        <limit lower="-6.28" upper="6.28" effort="300" velocity="300" />
+        <limit lower="-6.283" upper="6.283" effort="300" velocity="300" />
     </joint>
     
    <link name="world" />
@@ -240,10 +240,36 @@
  <xacro:robot_transmission joint_name="joint4"/>
  <xacro:robot_transmission joint_name="joint5"/>
  <xacro:robot_transmission joint_name="joint6"/>
- <!-- ros_control plugin -->
+ <!-- Disable physics for all links -->
+  <gazebo reference="base_link">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link1">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link2">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link3">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link4">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link5">
+    <kinematic>true</kinematic>
+  </gazebo>
+  <gazebo reference="Link6">
+    <kinematic>true</kinematic>
+  </gazebo>
+
+  <!-- JointPoseTrajectory plugin - no physics simulation, direct joint positioning -->
  <gazebo>
-     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-         <robotNamespace>/me6_robot</robotNamespace>
-     </plugin>
- </gazebo>
+    <plugin name="joint_pose_trajectory_plugin" filename="libgazebo_ros_joint_pose_trajectory.so">
+      <topic>/set_joint_trajectory</topic>
+      <updateRate>100</updateRate>
+      <interpolateX>true</interpolateX>
+      <frame_id>Link6</frame_id>
+    </plugin>
+  </gazebo>
 </robot>

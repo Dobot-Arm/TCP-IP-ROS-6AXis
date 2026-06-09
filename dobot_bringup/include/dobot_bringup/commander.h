@@ -17,11 +17,11 @@
 #include <thread>
 #include <mutex>
 #include <cstring>
+#include <unistd.h>
+#include <regex>
 #include <dobot_bringup/tcp_socket.h>
 
 #pragma pack(push, 1)
-// 数据 按照 8 字节 以及  48 字节对齐的模式,
-// 大小设计为  30 * 8 * 6 = 30 *6*sizeof(double) = 30 * sizeof(double)
 struct RealTimeData
 {
     uint16_t len;                   // 0000 ~ 0001  字符长度
@@ -31,39 +31,35 @@ struct RealTimeData
     uint64_t robot_mode;            // 0024 ~ 0031  机器人模式
     uint64_t controller_timer;      // 0032 ~ 0039
     uint64_t run_time;              // 0040 ~ 0047
-    // 0048 ~ 0095                       //
-    uint64_t test_value;            // 0048 ~ 0055  内存结构测试标准值  0x0123 4567 89AB CDEF
+    uint64_t test_value;            // 0048 ~ 0055  内存结构测试标准值  0x0123456789ABCDEF
     double safety_mode;             // 0056 ~ 0063
     double speed_scaling;           // 0064 ~ 0071
     double linear_momentum_norm;    // 0072 ~ 0079
     double v_main;                  // 0080 ~ 0087
     double v_robot;                 // 0088 ~ 0095
-    // 0096 ~ 0143                       //
     double i_robot;                         // 0096 ~ 0103
     double program_state;                   // 0104 ~ 0111
     double safety_status;                   // 0112 ~ 0119
     double tool_accelerometer_values[3];    // 0120 ~ 0143
-    // 0144 ~ 0191                       //
     double elbow_position[3];    // 0144 ~ 0167
     double elbow_velocity[3];    // 0168 ~ 0191
-    // 0192 ~ ...                        //
-    double q_target[6];              // 0192 ~ 0239  //
-    double qd_target[6];             // 0240 ~ 0287  //
-    double qdd_target[6];            // 0288 ~ 0335  //
-    double i_target[6];              // 0336 ~ 0383  //
-    double m_target[6];              // 0384 ~ 0431  //
-    double q_actual[6];              // 0432 ~ 0479  //
-    double qd_actual[6];             // 0480 ~ 0527  //
-    double i_actual[6];              // 0528 ~ 0575  //
-    double i_control[6];             // 0576 ~ 0623  //
-    double tool_vector_actual[6];    // 0624 ~ 0671  //
-    double TCP_speed_actual[6];      // 0672 ~ 0719  //
-    double TCP_force[6];             // 0720 ~ 0767  //
-    double Tool_vector_target[6];    // 0768 ~ 0815  //
-    double TCP_speed_target[6];      // 0816 ~ 0863  //
-    double motor_temperatures[6];    // 0864 ~ 0911  //
-    double joint_modes[6];           // 0912 ~ 0959  //
-    double v_actual[6];              // 960  ~ 1007  //
+    double q_target[6];              // 0192 ~ 0239
+    double qd_target[6];             // 0240 ~ 0287
+    double qdd_target[6];            // 0288 ~ 0335
+    double i_target[6];              // 0336 ~ 0383
+    double m_target[6];              // 0384 ~ 0431
+    double q_actual[6];              // 0432 ~ 0479
+    double qd_actual[6];             // 0480 ~ 0527
+    double i_actual[6];              // 0528 ~ 0575
+    double i_control[6];             // 0576 ~ 0623
+    double tool_vector_actual[6];    // 0624 ~ 0671
+    double TCP_speed_actual[6];      // 0672 ~ 0719
+    double TCP_force[6];             // 0720 ~ 0767
+    double Tool_vector_target[6];    // 0768 ~ 0815
+    double TCP_speed_target[6];      // 0816 ~ 0863
+    double motor_temperatures[6];    // 0864 ~ 0911
+    double joint_modes[6];           // 0912 ~ 0959
+    double v_actual[6];              // 960  ~ 1007
     int8_t handtype[4];              // 1008,1009,1010,1011 R、D、N、cfg
     int8_t userCoordinate;           // 1012
     int8_t toolCoordinate;           // 1013
@@ -90,9 +86,16 @@ struct RealTimeData
     int8_t RecordButtonSignal;       // 1034 按钮板录制信号
     int8_t ReappearButtonSignal;     // 1035 按钮板复现信号
     int8_t JawButtonSignal;          // 1036 按钮板夹爪控制信号
-    int8_t SixForceOnline;           // 1037 六维力在线状态
-    int8_t Reserve2[82];             // 1038 ~ 1119   预留
-    double m_actual[6];              // 1120 ~ 1167
+    int8_t SixForceOnline;           // 1037 六维力在线状态（未实现）
+    int8_t CollisionStates;          // 1038 碰撞状态
+    int8_t ArmApproachState;         // 1039 小臂接近暂停状态
+    int8_t J4ApproachState;          // 1040 J4接近暂停状态
+    int8_t J5ApproachState;          // 1041 J5接近暂停状态
+    int8_t J6ApproachState;          // 1042 J6接近暂停状态
+    int8_t Reserve2[61];             // 1043 ~ 1103   预留
+    double vibrationDisZ;            // 1104 ~ 1111 加速度计测量Z轴抖动位移
+    uint64_t currentCommandId;       // 1112 ~ 1119 当前运动队列id
+    double m_actual[6];              // 1120 ~ 1167 实际扭矩
     double load;                     // 1168 ~ 1175
     double centerX;                  // 1176 ~ 1183
     double centerY;                  // 1184 ~ 1191
@@ -103,20 +106,90 @@ struct RealTimeData
     double SixForceValue[6];         // 1304 ~ 1351
     double TargetQuaternion[4];      // 1352 ~ 1383
     double ActualQuaternion[4];      // 1384 ~ 1415
-    int8_t Reserve3[24];             // 1416 ~ 1440
+    uint16_t AutoManualMode;         // 1416 ~ 1417 手自动模式 0: 未开启 1: manual 2:auto
+    int8_t Reserve3[22];             // 1418 ~ 1439
 };
 #pragma pack(pop)
 
-/**
- * CR5Commander
- */
+static constexpr uint64_t EXPECTED_TEST_VALUE = 0x0123456789ABCDEF;
+static constexpr size_t FRAME_LENGTH = 1440;
+static constexpr size_t TEST_VALUE_OFFSET = 48;
+static constexpr size_t BUFFER_SIZE = 5760;
+
+class FrameBuffer {
+private:
+    uint8_t buffer_[BUFFER_SIZE];
+    size_t head_ = 0;
+    size_t tail_ = 0;
+
+    size_t available() const {
+        return (head_ >= tail_) ? (head_ - tail_) : (BUFFER_SIZE - tail_ + head_);
+    }
+
+public:
+    void push(const uint8_t* data, size_t len) {
+        for (size_t i = 0; i < len; i++) {
+            buffer_[head_] = data[i];
+            head_ = (head_ + 1) % BUFFER_SIZE;
+            if (head_ == tail_) {
+                tail_ = (tail_ + 1) % BUFFER_SIZE;
+            }
+        }
+    }
+
+    bool extractFrame(RealTimeData& frame) {
+        size_t avail = available();
+        if (avail < FRAME_LENGTH) return false;
+
+        size_t search_pos = tail_;
+        for (size_t i = 0; i <= avail - FRAME_LENGTH; i++) {
+            search_pos = (tail_ + i) % BUFFER_SIZE;
+
+            uint64_t test_value_at_pos;
+            size_t copy_len = sizeof(test_value_at_pos);
+
+            if (search_pos + TEST_VALUE_OFFSET + copy_len <= BUFFER_SIZE) {
+                memcpy(&test_value_at_pos, buffer_ + search_pos + TEST_VALUE_OFFSET, copy_len);
+            } else {
+                size_t remaining = BUFFER_SIZE - (search_pos + TEST_VALUE_OFFSET);
+                memcpy(&test_value_at_pos, buffer_ + search_pos + TEST_VALUE_OFFSET, remaining);
+                memcpy((uint8_t*)&test_value_at_pos + remaining, buffer_, copy_len - remaining);
+            }
+
+            if (test_value_at_pos == EXPECTED_TEST_VALUE) {
+                if (search_pos + FRAME_LENGTH <= BUFFER_SIZE) {
+                    memcpy(&frame, buffer_ + search_pos, FRAME_LENGTH);
+                } else {
+                    size_t remaining = BUFFER_SIZE - search_pos;
+                    memcpy(&frame, buffer_ + search_pos, remaining);
+                    memcpy((uint8_t*)&frame + remaining, buffer_, FRAME_LENGTH - remaining);
+                }
+
+                tail_ = (search_pos + FRAME_LENGTH) % BUFFER_SIZE;
+                return true;
+            }
+        }
+
+        tail_ = (tail_ + 1) % BUFFER_SIZE;
+        return false;
+    }
+
+    void clear() {
+        head_ = tail_ = 0;
+    }
+
+    size_t getAvailable() const {
+        return available();
+    }
+};
+
 class CR5Commander
 {
 protected:
     static constexpr double PI = 3.1415926;
 
 private:
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     double current_joint_[6];
     double tool_vector_[6];
     RealTimeData real_time_data_;
@@ -126,10 +199,18 @@ private:
     std::shared_ptr<TcpClient> real_time_tcp_;
     std::shared_ptr<TcpClient> dash_board_tcp_;
 
+    FrameBuffer frame_buffer_;
+    int invalid_frame_count_ = 0;
+    static constexpr int MAX_INVALID_FRAMES = 50;
+
 public:
     explicit CR5Commander(const std::string& ip)
-        : current_joint_{}, tool_vector_{}, real_time_data_{}, is_running_(false)
+        : is_running_(false)
     {
+        memset(current_joint_, 0, sizeof(current_joint_));
+        memset(tool_vector_, 0, sizeof(tool_vector_));
+        memset(&real_time_data_, 0, sizeof(real_time_data_));
+
         motion_cmd_tcp_ = std::make_shared<TcpClient>(ip, 30003);
         real_time_tcp_ = std::make_shared<TcpClient>(ip, 30004);
         dash_board_tcp_ = std::make_shared<TcpClient>(ip, 29999);
@@ -157,33 +238,59 @@ public:
 
     void recvTask()
     {
+        uint8_t raw_buffer[4096];
         uint32_t has_read;
 
         while (is_running_) {
             if (real_time_tcp_->isConnect()) {
                 try {
-                    if (real_time_tcp_->tcpRecv(&real_time_data_, sizeof(real_time_data_), has_read, 5000)) {
-                        if (real_time_data_.len != 1440)
-                            continue;
+                    if (real_time_tcp_->tcpRecv(raw_buffer, sizeof(raw_buffer), has_read, 5000)) {
+                        frame_buffer_.push(raw_buffer, has_read);
 
-                        mutex_.lock();
-                        for (uint32_t i = 0; i < 6; i++)
-                            current_joint_[i] = deg2Rad(real_time_data_.q_actual[i]);
+                        RealTimeData frame;
+                        bool found_frame = false;
+                        while (frame_buffer_.extractFrame(frame)) {
+                            if (frame.len == 1440) {
+                                mutex_.lock();
+                                real_time_data_ = frame;
+                                for (uint32_t i = 0; i < 6; i++)
+                                    current_joint_[i] = deg2Rad(real_time_data_.q_actual[i]);
+                                memcpy(tool_vector_, real_time_data_.tool_vector_actual, sizeof(tool_vector_));
+                                mutex_.unlock();
 
-                        memcpy(tool_vector_, real_time_data_.tool_vector_actual, sizeof(tool_vector_));
-                        mutex_.unlock();
-                    } else {
-                        //                        ROS_WARN("tcp recv timeout");
+                                found_frame = true;
+                                invalid_frame_count_ = 0;
+                            }
+                        }
+
+                        if (!found_frame && frame_buffer_.getAvailable() >= FRAME_LENGTH * 4) {
+                            invalid_frame_count_++;
+                            if (invalid_frame_count_ >= MAX_INVALID_FRAMES) {
+                                ROS_ERROR("Too many invalid frames (%d), disconnecting and reconnecting...", invalid_frame_count_);
+                                
+                                // 主动断开并重连
+                                real_time_tcp_->disConnect();
+                                frame_buffer_.clear();
+                                invalid_frame_count_ = 0;
+                                
+                                // 短暂延迟后重连
+                                usleep(100000);  // 100ms
+                            }
+                        }
                     }
                 } catch (const TcpClientException& err) {
                     real_time_tcp_->disConnect();
+                    frame_buffer_.clear();
+                    invalid_frame_count_ = 0;
                     ROS_ERROR("real time tcp recv error : %s", err.what());
                 }
             } else {
+                frame_buffer_.clear();
+                invalid_frame_count_ = 0;
                 try {
                     real_time_tcp_->connect();
                 } catch (const TcpClientException& err) {
-                    ROS_ERROR("move cmd tcp recv error : %s", err.what());
+                    ROS_ERROR("move cmd tcp connect error : %s", err.what());
                     sleep(3);
                 }
             }
@@ -192,7 +299,7 @@ public:
                 try {
                     dash_board_tcp_->connect();
                 } catch (const TcpClientException& err) {
-                    ROS_ERROR("dash tcp recv error : %s", err.what());
+                    ROS_ERROR("dash tcp connect error : %s", err.what());
                     sleep(3);
                 }
             }
@@ -201,7 +308,7 @@ public:
                 try {
                     motion_cmd_tcp_->connect();
                 } catch (const TcpClientException& err) {
-                    ROS_ERROR("tcp recv error : %s", err.what());
+                    ROS_ERROR("motion cmd tcp connect error : %s", err.what());
                     sleep(3);
                 }
             }
@@ -220,7 +327,10 @@ public:
 
     bool isEnable() const
     {
-        return real_time_data_.robot_mode == 5;
+        mutex_.lock();
+        bool result = real_time_data_.robot_mode == 5;
+        mutex_.unlock();
+        return result;
     }
 
     bool isConnected() const
@@ -230,12 +340,18 @@ public:
 
     const RealTimeData* getRealData() const
     {
-        return &real_time_data_;
+        mutex_.lock();
+        RealTimeData* result = const_cast<RealTimeData*>(&real_time_data_);
+        mutex_.unlock();
+        return result;
     }
 
     uint16_t getRobotMode() const
     {
-        return real_time_data_.robot_mode;
+        mutex_.lock();
+        uint16_t result = real_time_data_.robot_mode;
+        mutex_.unlock();
+        return result;
     }
 
     void dashboardDoCmd(const char* cmd, int32_t& err_id)
@@ -263,43 +379,22 @@ public:
     static void parseString(const std::string& str, const std::string& send_cmd, int32_t& err,
                             std::vector<std::string>& result)
     {
-        if (str.find(send_cmd) == std::string::npos)
-            throw std::logic_error(std::string("Invalid string : ") + str);
-
-        std::size_t pos = str.find(',');
-        if (pos == std::string::npos)
-            throw std::logic_error(std::string("Has no ',' found : ") + str);
-
-        // parse err id
-        char buf[200];
-        assert(pos < sizeof(buf));
-        str.copy(buf, pos, 0);
-        buf[pos] = 0;
-
-        char* end;
-        err = (int32_t)strtol(buf, &end, 10);
-        if (*end != '\0')
-            throw std::logic_error(std::string("Invalid err id: ") + str);
-
-        // parse result
-        std::size_t start_pos = str.find('{');
-        if (start_pos == std::string::npos)
-            throw std::logic_error(std::string("Has no '{': ") + str);
-        std::size_t end_pos = str.find('}');
-        if (end_pos == std::string::npos)
-            throw std::logic_error(std::string("Has no '}': ") + str);
-
-        assert(end_pos > start_pos);
-        char* buf_str = new char[str.length() + 1];
-        memset(buf_str, 0, str.length() + 1);
-        str.copy(buf_str, end_pos - start_pos - 1, start_pos + 1);
-
-        std::stringstream ss;
-        ss << buf_str;
-        delete[] buf_str;
-
-        while (ss.getline(buf, sizeof(buf), ','))
-            result.emplace_back(buf);
+        std::regex pattern("-?\\d+");
+        std::smatch matches;
+        std::string::const_iterator searchStart(str.cbegin());
+        
+        while (std::regex_search(searchStart, str.cend(), matches, pattern)) {
+            for (auto& match : matches) {
+                result.push_back(match.str());
+            }
+            searchStart = matches.suffix().first;
+        }
+        
+        if (result.size() >= 1) {
+            err = stoi(result[0]);
+        } else {
+            err = -1;
+        }
     }
 
     void dashSendCmd(const char* cmd, uint32_t len)
@@ -320,6 +415,10 @@ public:
     }
 
 private:
+    static inline double deg2Rad(double deg)
+    {
+        return deg * PI / 180.0;
+    }
     static void tcpDoCmd(std::shared_ptr<TcpClient>& tcp, const char* cmd, int32_t& err_id,
                          std::vector<std::string>& result)
     {
@@ -350,15 +449,5 @@ private:
         } catch (const std::logic_error& err) {
             ROS_ERROR("tcpDoCmd failed : %s", err.what());
         }
-    }
-
-    static inline double rad2Deg(double rad)
-    {
-        return rad * 180.0 / PI;
-    }
-
-    static inline double deg2Rad(double deg)
-    {
-        return deg * PI / 180.0;
     }
 };

@@ -14,8 +14,7 @@
 #include <ros/ros.h>
 #include <ros/param.h>
 #include <dobot_v4_bringup/cr5_v4_robot.h>
-
-// #include <dobot_v4_bringup/parseTool.h>
+#include <dobot_v4_bringup/parseTool.h>
 
 CRRobot::CRRobot(ros::NodeHandle& nh, std::string name)
     : ActionServer<FollowJointTrajectoryAction>(nh, std::move(name), false)
@@ -366,7 +365,7 @@ void CRRobot::pubFeedBackInfo()
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->tool_vector_target[i]);
+            vecTransit.push_back(realTimeData->Tool_vector_target[i]);
         }
         root["tool_vector_target"] = vecTransit;
         vecTransit.clear();
@@ -512,6 +511,22 @@ std::vector<double> CRRobot::sample_traj(const trajectory_msgs::JointTrajectoryP
     double T = P1.time_from_start.toSec() - P0.time_from_start.toSec();
     double t = time_index;
     std::vector<double> interp_traj;
+    
+    // 防止除以零：如果区间时间为零，返回起点
+    if (T <= 0.0) {
+        for (int i = 0; i < P0.positions.size(); i++) {
+            interp_traj.push_back(P0.positions[i] * 180.0 / M_PI);
+        }
+        return interp_traj;
+    }
+    
+    // 时间索引保护：确保 t 在 [0, T] 范围内
+    if (t < 0.0) {
+        t = 0.0;
+    } else if (t > T) {
+        t = T;
+    }
+    
     for (int i = 0; i < P0.positions.size(); i++) {
         a = P0.positions[i];
         b = P0.velocities[i];
@@ -528,25 +543,47 @@ void CRRobot::moveHandle(const ros::TimerEvent& tm,
 {
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = handle.getGoal();
 
-    static const double SERVOJ_DURATION = 0.4;
-    double t = SERVOJ_DURATION * 1.5;
-    ros::Rate timer(1.0 / SERVOJ_DURATION);    // servoj发布频率
+    static const double SERVOJ_DURATION = 0.03;  // 33Hz 插补频率
+    double t = SERVOJ_DURATION;
+    double aheadtime = 60.0;
+    ros::Rate timer(1.0 / SERVOJ_DURATION);
     double t0 = ros::Time::now().toSec();
+
+    ROS_INFO("Starting trajectory execution with %zu waypoints, total duration: %0.3fs", 
+             goal->trajectory.points.size(),
+             goal->trajectory.points.back().time_from_start.toSec());
 
     try {
         for (int i = 0; i < goal->trajectory.points.size() - 1; i++) {
             trajectory_msgs::JointTrajectoryPoint interp_traj_begin = goal->trajectory.points[i];
             trajectory_msgs::JointTrajectoryPoint interp_traj_end = goal->trajectory.points[i + 1];
-            double real_time;    // 实际间隔时间
+            double real_time;
             double t1;
             t1 = ros::Time::now().toSec();
             real_time = t1 - t0;
-            while (real_time < interp_traj_end.time_from_start.toSec() - SERVOJ_DURATION) {
+            
+            while (real_time < interp_traj_end.time_from_start.toSec()) {
+                // 时间索引：当前时刻在当前区间内的相对时间
+                // servoj 是实时跟踪命令，连续发送时机器人实时跟踪目标位置
                 double time_index = real_time - interp_traj_begin.time_from_start.toSec();
+                double T = interp_traj_end.time_from_start.toSec() - interp_traj_begin.time_from_start.toSec();
+                
+                // 防止负时间索引和超出区间
+                if (time_index < 0.0) {
+                    time_index = 0.0;
+                } else if (time_index > T) {
+                    time_index = T;
+                }
+                
+                // 防止除以零：如果区间时间为零，跳过该区间
+                if (T <= 0.0) {
+                    break;
+                }
+                
                 std::vector<double> tmp = sample_traj(interp_traj_begin, interp_traj_end, time_index);
-                char cmd[100];
-                sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f)", tmp[0], tmp[1], tmp[2], tmp[3],
-                        tmp[4], tmp[5], t);
+                char cmd[150];
+                sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
+                        tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], t, aheadtime);
                 int32_t err_id;
                 commander_->motionDoCmd(cmd, err_id);
                 timer.sleep();
@@ -554,21 +591,28 @@ void CRRobot::moveHandle(const ros::TimerEvent& tm,
                 real_time = t1 - t0;
             }
         }
+        
+        // 发送最后一个点
         std::vector<double> last_traj;
         int point_num = goal->trajectory.points.size();
         for (int i = 0; i < 6; i++) {
             last_traj.push_back(goal->trajectory.points[point_num - 1].positions[i] * 180 / M_PI);
         }
-        char cmd[100];
-        sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f)", last_traj[0], last_traj[1], last_traj[2],
-                last_traj[3], last_traj[4], last_traj[5], t);
+        char cmd[150];
+        sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
+                last_traj[0], last_traj[1], last_traj[2], last_traj[3], last_traj[4], last_traj[5], t, aheadtime);
         int32_t err_id;
         commander_->motionDoCmd(cmd, err_id);
+        
+        // 等待最后一段运动完成
+        ros::Duration(SERVOJ_DURATION).sleep();
+        
     } catch (const TcpClientException& err) {
         ROS_ERROR("%s", err.what());
         return;
     }
 
+    ROS_INFO("Trajectory execution completed");
     timer_.stop();
     movj_timer_.stop();
     handle.setSucceeded();
@@ -790,12 +834,12 @@ bool CRRobot::inverseKin(dobot_v4_bringup::InverseKin::Request& request,
 
 bool CRRobot::getAngle(dobot_v4_bringup::GetAngle::Request& request, dobot_v4_bringup::GetAngle::Response& response)
 {
-    return commander_->callRosService(parseTool::parserGetAngleRequest2String(request), response.res);
+    return commander_->callRosService_f(parseTool::parserGetAngleRequest2String(request), response.res, response.robot_return);
 }
 
 bool CRRobot::getPose(dobot_v4_bringup::GetPose::Request& request, dobot_v4_bringup::GetPose::Response& response)
 {
-    return commander_->callRosService(parseTool::parserGetPoseRequest2String(request), response.res);
+    return commander_->callRosService_f(parseTool::parserGetPoseRequest2String(request), response.res, response.robot_return);
 }
 
 bool CRRobot::emergencyStop(dobot_v4_bringup::EmergencyStop::Request& request,
@@ -914,18 +958,18 @@ bool CRRobot::dragSensivity(dobot_v4_bringup::DragSensivity::Request& request,
 
 bool CRRobot::getDO(dobot_v4_bringup::GetDO::Request& request, dobot_v4_bringup::GetDO::Response& response)
 {
-    return commander_->callRosService(parseTool::parserGetDORequest2String(request), response.res);
+    return commander_->callRosService_f(parseTool::parserGetDORequest2String(request), response.res, response.robot_return);
 }
 
 bool CRRobot::getAO(dobot_v4_bringup::GetAO::Request& request, dobot_v4_bringup::GetAO::Response& response)
 {
-    return commander_->callRosService(parseTool::parserGetAORequest2String(request), response.res);
+    return commander_->callRosService_f(parseTool::parserGetAORequest2String(request), response.res, response.robot_return);
 }
 
 bool CRRobot::getDOGroup(dobot_v4_bringup::GetDOGroup::Request& request,
                          dobot_v4_bringup::GetDOGroup::Response& response)
 {
-    return commander_->callRosService(parseTool::parserGetDOGroupRequest2String(request), response.res);
+    return commander_->callRosService_f(parseTool::parserGetDOGroupRequest2String(request), response.res, response.robot_return);
 }
 
 bool CRRobot::setTool485(dobot_v4_bringup::SetTool485::Request& request,

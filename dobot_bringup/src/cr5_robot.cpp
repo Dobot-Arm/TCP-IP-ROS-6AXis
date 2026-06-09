@@ -219,49 +219,118 @@ void CR5Robot::feedbackHandle(const ros::TimerEvent& tm,
     handle.publishFeedback(feedback);
 }
 
+std::vector<double> CR5Robot::sample_traj(const trajectory_msgs::JointTrajectoryPoint& P0,
+                                          const trajectory_msgs::JointTrajectoryPoint& P1, const double& time_index)
+{
+    double a, b, c, d;
+    double T = P1.time_from_start.toSec() - P0.time_from_start.toSec();
+    double t = time_index;
+    std::vector<double> interp_traj;
+    
+    // 防止除以零：如果区间时间为零，返回起点
+    if (T <= 0.0) {
+        for (int i = 0; i < P0.positions.size(); i++) {
+            interp_traj.push_back(P0.positions[i] * 180.0 / M_PI);
+        }
+        return interp_traj;
+    }
+    
+    // 时间索引保护：确保 t 在 [0, T] 范围内
+    if (t < 0.0) {
+        t = 0.0;
+    } else if (t > T) {
+        t = T;
+    }
+    
+    for (int i = 0; i < P0.positions.size(); i++) {
+        a = P0.positions[i];
+        b = P0.velocities[i];
+        c = (-3.0 * P0.positions[i] + 3.0 * P1.positions[i] - 2.0 * T * P0.velocities[i] - T * P1.velocities[i]) /
+            (T * T);
+        d = (2.0 * P0.positions[i] - 2.0 * P1.positions[i] + T * P0.velocities[i] + T * P1.velocities[i]) / (T * T * T);
+        interp_traj.push_back((a + b * t + c * t * t + d * t * t * t) * 180.0 / M_PI);
+    }
+    return interp_traj;
+}
+
 void CR5Robot::moveHandle(const ros::TimerEvent& tm,
                           ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle handle)
 {
-    control_msgs::FollowJointTrajectoryGoalConstPtr trajectory = handle.getGoal();
+    control_msgs::FollowJointTrajectoryGoalConstPtr goal = handle.getGoal();
 
-    if (index_ < trajectory->trajectory.points.size()) {
-        auto point = trajectory->trajectory.points[index_].positions;
-        double tmp[6];
-        for (uint32_t i = 0; i < 6; i++) {
-            tmp[i] = point[i] * 180.0 / 3.1415926;
-        }
+    static const double SERVOJ_DURATION = 0.03;  // 33Hz 插补频率
+    double t = SERVOJ_DURATION;
+    double aheadtime = 60.0;
+    ros::Rate timer(1.0 / SERVOJ_DURATION);
+    double t0 = ros::Time::now().toSec();
 
-        dobot_bringup::ServoJ srv;
-        srv.request.offset1 = tmp[0];
-        srv.request.offset2 = tmp[1];
-        srv.request.offset3 = tmp[2];
-        srv.request.offset4 = tmp[3];
-        srv.request.offset5 = tmp[4];
-        srv.request.offset6 = tmp[5];
-        if (kServoJParam && kServoJParam->trajectory_duration != 0.0) {
-            srv.request.t.push_back(kServoJParam->t);
-            srv.request.lookahead_time.push_back(kServoJParam->lookahead_time);
-            srv.request.gain.push_back(kServoJParam->gain);
-            movj_timer_ = control_nh_.createTimer(ros::Duration(kServoJParam->trajectory_duration),
-                                                  boost::bind(&CR5Robot::moveHandle, this, _1, handle));
+    ROS_INFO("Starting trajectory execution with %zu waypoints, total duration: %0.3fs", 
+             goal->trajectory.points.size(),
+             goal->trajectory.points.back().time_from_start.toSec());
+
+    try {
+        for (int i = 0; i < goal->trajectory.points.size() - 1; i++) {
+            trajectory_msgs::JointTrajectoryPoint interp_traj_begin = goal->trajectory.points[i];
+            trajectory_msgs::JointTrajectoryPoint interp_traj_end = goal->trajectory.points[i + 1];
+            double real_time;
+            double t1;
+            t1 = ros::Time::now().toSec();
+            real_time = t1 - t0;
+            
+            while (real_time < interp_traj_end.time_from_start.toSec()) {
+                // 时间索引：当前时刻在当前区间内的相对时间
+                // servoj 是实时跟踪命令，连续发送时机器人实时跟踪目标位置
+                double time_index = real_time - interp_traj_begin.time_from_start.toSec();
+                double T = interp_traj_end.time_from_start.toSec() - interp_traj_begin.time_from_start.toSec();
+                
+                // 防止负时间索引和超出区间
+                if (time_index < 0.0) {
+                    time_index = 0.0;
+                } else if (time_index > T) {
+                    time_index = T;
+                }
+                
+                // 防止除以零：如果区间时间为零，跳过该区间
+                if (T <= 0.0) {
+                    break;
+                }
+                
+                std::vector<double> tmp = sample_traj(interp_traj_begin, interp_traj_end, time_index);
+                char cmd[150];
+                sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
+                        tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], t, aheadtime);
+                int32_t err_id;
+                commander_->motionDoCmd(cmd, err_id);
+                timer.sleep();
+                t1 = ros::Time::now().toSec();
+                real_time = t1 - t0;
+            }
         }
-        servoJ(srv.request, srv.response);
-        index_++;
-    } else {
-#define OFFSET_VAL 0.01
-        double current_joints[6];
-        getJointState(current_joints);
-        if ((current_joints[0] >= goal_[0] - OFFSET_VAL) && (current_joints[0] <= goal_[0] + OFFSET_VAL) &&
-            (current_joints[1] >= goal_[1] - OFFSET_VAL) && (current_joints[1] <= goal_[1] + OFFSET_VAL) &&
-            (current_joints[2] >= goal_[2] - OFFSET_VAL) && (current_joints[2] <= goal_[2] + OFFSET_VAL) &&
-            (current_joints[3] >= goal_[3] - OFFSET_VAL) && (current_joints[3] <= goal_[3] + OFFSET_VAL) &&
-            (current_joints[4] >= goal_[4] - OFFSET_VAL) && (current_joints[4] <= goal_[4] + OFFSET_VAL) &&
-            (current_joints[5] >= goal_[5] - OFFSET_VAL) && (current_joints[5] <= goal_[5] + OFFSET_VAL)) {
-            timer_.stop();
-            movj_timer_.stop();
-            handle.setSucceeded();
+        
+        // 发送最后一个点
+        std::vector<double> last_traj;
+        int point_num = goal->trajectory.points.size();
+        for (int i = 0; i < 6; i++) {
+            last_traj.push_back(goal->trajectory.points[point_num - 1].positions[i] * 180 / M_PI);
         }
+        char cmd[150];
+        sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
+                last_traj[0], last_traj[1], last_traj[2], last_traj[3], last_traj[4], last_traj[5], t, aheadtime);
+        int32_t err_id;
+        commander_->motionDoCmd(cmd, err_id);
+        
+        // 等待最后一段运动完成
+        ros::Duration(SERVOJ_DURATION).sleep();
+        
+    } catch (const TcpClientException& err) {
+        ROS_ERROR("%s", err.what());
+        return;
     }
+
+    ROS_INFO("Trajectory execution completed");
+    timer_.stop();
+    movj_timer_.stop();
+    handle.setSucceeded();
 }
 
 void CR5Robot::goalHandle(ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle handle)
@@ -1495,9 +1564,9 @@ bool CR5Robot::movL(dobot_bringup::MovL::Request& request, dobot_bringup::MovL::
 bool CR5Robot::servoJ(dobot_bringup::ServoJ::Request& request, dobot_bringup::ServoJ::Response& response)
 {
     try {
-        char cmd[100];
+        char cmd[150];
         if (request.t.empty()) {
-            sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=0.4)", request.offset1, request.offset2,
+            sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=0.03,aheadtime=60.0)", request.offset1, request.offset2,
                     request.offset3, request.offset4, request.offset5, request.offset6);
         } else {
             sprintf(cmd, "ServoJ(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f)", request.offset1,

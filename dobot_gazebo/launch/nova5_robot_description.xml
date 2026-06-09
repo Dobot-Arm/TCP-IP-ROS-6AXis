@@ -2,6 +2,9 @@
   <!--Load urdf to param server-->
   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find dobot_gazebo)/urdf/nova5_robot.xacro'"/>
 
+  <!--Convert fake controller joint states to trajectory for Gazebo-->
+  <node name="joint_state_to_trajectory" pkg="dobot_gazebo" type="joint_state_to_trajectory.py" output="screen"/>
+
   <!--GUI used to send fake joint values-->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="false"/>

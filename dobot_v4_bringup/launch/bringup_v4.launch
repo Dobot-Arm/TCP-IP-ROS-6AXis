@@ -12,7 +12,7 @@
   <node name="$(arg robotName)$(env DOBOT_TYPE)_robot" pkg="dobot_v4_bringup" type="dobot_v4_bringup" output="screen" >
     <param name="num_nodes" type="int" value="1" />
     <param name="robot_node_name" type="str" value="$(arg robotName)"/>
-    <param name="joint_publish_rate" type="double" value="10" />
+    <param name="joint_publish_rate" type="double" value="33" />
     <param name="trajectory_duration" type="double" value="0.1" />
     <param name="robot_ip_address" type="str" value="$(arg robotIp)"/>
   </node>

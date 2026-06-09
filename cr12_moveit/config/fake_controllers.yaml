@@ -1,6 +1,7 @@
+rate: 50
 controller_list:
-  - name: fake_cr12_arm_controller
-    type: $(arg fake_execution_type)
+  - name: fake_manipulator_controller
+    type: interpolate
     joints:
       - joint1
       - joint2
@@ -8,6 +9,3 @@ controller_list:
       - joint4
       - joint5
       - joint6
-initial:  # Define initial robot poses per group
-  - group: cr12_arm
-    pose: cr12_arm

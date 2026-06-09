@@ -1,10 +1,9 @@
 <launch>
 
-<!-- if no argument is passed, moveit_simple_controller_manager will be set -->
-  <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
-  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
+  <!-- if no argument is passed, moveit_simple_controller_manager will be set -->
+  <arg name="execution_type" />
+  <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager"/>
 
   <!-- loads ros_controllers to the param server -->
-
-<rosparam file="$(find cr5_moveit)/config/ros_controllers.yaml"/>
+  <rosparam file="$(find cr5_moveit)/config/ros_controllers.yaml"/>
 </launch>

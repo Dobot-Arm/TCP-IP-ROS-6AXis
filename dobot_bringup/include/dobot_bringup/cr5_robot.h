@@ -307,6 +307,8 @@ protected:
 
 private:
     static int str2Int(const char* val);
+    std::vector<double> sample_traj(const trajectory_msgs::JointTrajectoryPoint& P0,
+                                    const trajectory_msgs::JointTrajectoryPoint& P1, const double& time_index);
 
     void feedbackHandle(const ros::TimerEvent& tm,
                         actionlib::ActionServer<FollowJointTrajectoryAction>::GoalHandle handle);

@@ -1,3 +1,2 @@
-# The name of this file shouldn't be changed, or else the Setup Assistant won't detect it
-sensors:
-  - {}
+# No sensors configured - this disables the sensor manager to avoid errors
+sensors: []

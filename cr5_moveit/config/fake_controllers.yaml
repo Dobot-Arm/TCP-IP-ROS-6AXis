@@ -1,5 +1,7 @@
+rate: 50
 controller_list:
   - name: fake_manipulator_controller
+    type: interpolate
     joints:
       - joint1
       - joint2

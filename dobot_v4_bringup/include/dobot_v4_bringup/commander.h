@@ -1,87 +1,81 @@
 /**
  ***********************************************************************************************************************
  *
- * @author YangXiBo
- * @date   2023/08/18
+ * @author ZhangRan
+ * @date   2021/08/09
  *
+ * <h2><center>&copy; COPYRIGHT 2021 YUE JIANG TECHNOLOGY</center></h2>
  *
  ***********************************************************************************************************************
  */
 
 #pragma once
 
-#include <ros/ros.h>
 #include <vector>
 #include <string>
 #include <memory>
 #include <thread>
 #include <mutex>
-#include <algorithm>
-#include <regex>
-#include <assert.h>
 #include <cstring>
+#include <sstream>
+#include <regex>
+#include <cassert>
+#include <unistd.h>
 #include <dobot_v4_bringup/tcp_socket.h>
 
 #pragma pack(push, 1)
-// 数据 按照 8 字节 以及  48 字节对齐的模式,
-// 大小设计为  30 * 8 * 6 = 30 *6*sizeof(double) = 30 * sizeof(double)
-typedef struct RealTimeData_t
+struct RealTimeData
 {
-    //
     uint16_t len;                   // 0000 ~ 0001  字符长度
     uint16_t Reserve[3];            // 0002 ~ 0007  占位符
-    uint64_t digital_input_bits;    // 0008 ~ 0015  DI 按照bit 进行计算的
-    uint64_t digital_outputs;       // 0016 ~ 0023  DO 按照bit 进行计算的
+    uint64_t digital_input_bits;    // 0008 ~ 0015  DI
+    uint64_t digital_outputs;       // 0016 ~ 0023  DO
     uint64_t robot_mode;            // 0024 ~ 0031  机器人模式
-    uint64_t controller_timer;      // 0032 ~ 0039  机器人时间 1970年到现在的时间  单位是 ms
-    uint64_t run_time;              // 0040 ~ 0047  机器人开机时间 单位是ms
-    // 0048 ~ 0095                       //
-    uint64_t test_value;            // 0048 ~ 0055  内存结构测试标准值  0x0123 4567 89AB CDEF
-    double safety_mode;             // 0056 ~ 0063  (弃用字段)
-    double speed_scaling;           // 0064 ~ 0071  全局速率
-    double linear_momentum_norm;    // 0072 ~ 0079  机器人当前动量(未实现)
-    double v_main;                  // 0080 ~ 0087  控制板电压值(未实现)
-    double v_robot;                 // 0088 ~ 0095  机器人电压(48V)
-    // 0096 ~ 0143                       //
-    double i_robot;                         // 0096 ~ 0103 机器人电流
-    double program_state;                   // 0104 ~ 0111 脚本运行状态
-    double safety_status;                   // 0112 ~ 0119 安全状态（未实现）
-    double tool_accelerometer_values[3];    // 0120 ~ 0143 tcp加速度（未实现）
-    // 0144 ~ 0191                       //
-    double elbow_position[3];    // 0144 ~ 0167 肘位置（未实现）
-    double elbow_velocity[3];    // 0168 ~ 0191 肘速度（未实现）
-    // 0192 ~ ...                        //
-    double q_target[6];              // 0192 ~ 0239  // 目标关节位置
-    double qd_target[6];             // 0240 ~ 0287  // 目标关节速度
-    double qdd_target[6];            // 0288 ~ 0335  // 目标关节加速度
-    double i_target[6];              // 0336 ~ 0383  // 目标关节电流
-    double m_target[6];              // 0384 ~ 0431  // 目标关节扭矩
-    double q_actual[6];              // 0432 ~ 0479  // 实际关节位置
-    double qd_actual[6];             // 0480 ~ 0527  // 实际关节速度
-    double i_actual[6];              // 0528 ~ 0575  // 实际电流
-    double i_control[6];             // 0576 ~ 0623  // TCP传感器力值（未实现）
-    double tool_vector_actual[6];    // 0624 ~ 0671  // TCP实际坐标 (TCP: 末端工具中心点 terminal central point)
-    double TCP_speed_actual[6];      // 0672 ~ 0719  // TCP速度
-    double TCP_force[6];             // 0720 ~ 0767  // TCP力值  (电流环计算)
-    double tool_vector_target[6];    // 0768 ~ 0815  // TCP目标坐标
-    double TCP_speed_target[6];      // 0816 ~ 0863  // TCP目标速度
-    double motor_temperatures[6];    // 0864 ~ 0911  // 关节温度
-    double joint_modes[6];           // 0912 ~ 0959  // 关节控制模式
-    double v_actual[6];              // 960  ~ 1007  // 关节电压
-    int8_t handtype[4];              // 1008,1009,1010,1011 R、D、N、cfg   手系信息  新版已经删除????
-    int8_t userCoordinate;           // 1012 用户坐标系ID
-    int8_t toolCoordinate;           // 1013 工具坐标系ID
-    int8_t isRunQueuedCmd;           // 1014 算法队列运行标志
-    int8_t isPauseCmdFlag;           // 1015 算法队列暂停标志
-    int8_t velocityRatio;            // 1016 关节速度比例
-    int8_t accelerationRatio;        // 1017 关节加速度比例
-    int8_t jerkRatio;                // 1018 关节加加速度比例（未实现）
-    int8_t xyzVelocityRatio;         // 1019 笛卡尔位置速度比例 (x,y,z  单位是 距离每秒)
-    int8_t rVelocityRatio;           // 1020 笛卡尔姿态速度比例 (rx,ry,rz 单位是 角度每秒)
-    int8_t xyzAccelerationRatio;     // 1021 笛卡尔位置加速度比例
-    int8_t rAccelerationRatio;       // 1022 笛卡尔姿态加速度比例
-    int8_t xyzJerkRatio;             // 1023 笛卡尔位置加加速度比例（未实现）
-    int8_t rJerkRatio;               // 1024 笛卡尔姿态加加速度比例（未实现）
+    uint64_t controller_timer;      // 0032 ~ 0039
+    uint64_t run_time;              // 0040 ~ 0047
+    uint64_t test_value;            // 0048 ~ 0055  内存结构测试标准值  0x0123456789ABCDEF
+    double safety_mode;             // 0056 ~ 0063
+    double speed_scaling;           // 0064 ~ 0071
+    double linear_momentum_norm;    // 0072 ~ 0079
+    double v_main;                  // 0080 ~ 0087
+    double v_robot;                 // 0088 ~ 0095
+    double i_robot;                         // 0096 ~ 0103
+    double program_state;                   // 0104 ~ 0111
+    double safety_status;                   // 0112 ~ 0119
+    double tool_accelerometer_values[3];    // 0120 ~ 0143
+    double elbow_position[3];    // 0144 ~ 0167
+    double elbow_velocity[3];    // 0168 ~ 0191
+    double q_target[6];              // 0192 ~ 0239
+    double qd_target[6];             // 0240 ~ 0287
+    double qdd_target[6];            // 0288 ~ 0335
+    double i_target[6];              // 0336 ~ 0383
+    double m_target[6];              // 0384 ~ 0431
+    double q_actual[6];              // 0432 ~ 0479
+    double qd_actual[6];             // 0480 ~ 0527
+    double i_actual[6];              // 0528 ~ 0575
+    double i_control[6];             // 0576 ~ 0623
+    double tool_vector_actual[6];    // 0624 ~ 0671
+    double TCP_speed_actual[6];      // 0672 ~ 0719
+    double TCP_force[6];             // 0720 ~ 0767
+    double Tool_vector_target[6];    // 0768 ~ 0815
+    double TCP_speed_target[6];      // 0816 ~ 0863
+    double motor_temperatures[6];    // 0864 ~ 0911
+    double joint_modes[6];           // 0912 ~ 0959
+    double v_actual[6];              // 960  ~ 1007
+    int8_t handtype[4];              // 1008,1009,1010,1011 R、D、N、cfg
+    int8_t userCoordinate;           // 1012
+    int8_t toolCoordinate;           // 1013
+    int8_t isRunQueuedCmd;           // 1014
+    int8_t isPauseCmdFlag;           // 1015
+    int8_t velocityRatio;            // 1016
+    int8_t accelerationRatio;        // 1017
+    int8_t jerkRatio;                // 1018
+    int8_t xyzVelocityRatio;         // 1019
+    int8_t rVelocityRatio;           // 1020
+    int8_t xyzAccelerationRatio;     // 1021
+    int8_t rAccelerationRatio;       // 1022
+    int8_t xyzJerkRatio;             // 1023
+    int8_t rJerkRatio;               // 1024
     int8_t BrakeStatus;              // 1025 机器人抱闸状态
     int8_t EnableStatus;             // 1026 机器人使能状态
     int8_t DragStatus;               // 1027 机器人拖拽状态
@@ -116,19 +110,88 @@ typedef struct RealTimeData_t
     double ActualQuaternion[4];      // 1384 ~ 1415 实际四元数
     uint16_t AutoManualMode;         // 1416 ~ 1417 手自动模式 0: 未开启 1: manual 2:auto
     int8_t Reserve3[22];             // 1418 ~ 1439
-} RealTimeData;
+};
 #pragma pack(pop)
 
-/**
- * URCommander
- */
+static constexpr uint64_t EXPECTED_TEST_VALUE = 0x0123456789ABCDEF;
+static constexpr size_t FRAME_LENGTH = 1440;
+static constexpr size_t TEST_VALUE_OFFSET = 48;
+static constexpr size_t BUFFER_SIZE = 5760;
+
+class FrameBuffer {
+private:
+    uint8_t buffer_[BUFFER_SIZE];
+    size_t head_ = 0;
+    size_t tail_ = 0;
+
+    size_t available() const {
+        return (head_ >= tail_) ? (head_ - tail_) : (BUFFER_SIZE - tail_ + head_);
+    }
+
+public:
+    void push(const uint8_t* data, size_t len) {
+        for (size_t i = 0; i < len; i++) {
+            buffer_[head_] = data[i];
+            head_ = (head_ + 1) % BUFFER_SIZE;
+            if (head_ == tail_) {
+                tail_ = (tail_ + 1) % BUFFER_SIZE;
+            }
+        }
+    }
+
+    bool extractFrame(RealTimeData& frame) {
+        size_t avail = available();
+        if (avail < FRAME_LENGTH) return false;
+
+        size_t search_pos = tail_;
+        for (size_t i = 0; i <= avail - FRAME_LENGTH; i++) {
+            search_pos = (tail_ + i) % BUFFER_SIZE;
+
+            uint64_t test_value_at_pos;
+            size_t copy_len = sizeof(test_value_at_pos);
+
+            if (search_pos + TEST_VALUE_OFFSET + copy_len <= BUFFER_SIZE) {
+                memcpy(&test_value_at_pos, buffer_ + search_pos + TEST_VALUE_OFFSET, copy_len);
+            } else {
+                size_t remaining = BUFFER_SIZE - (search_pos + TEST_VALUE_OFFSET);
+                memcpy(&test_value_at_pos, buffer_ + search_pos + TEST_VALUE_OFFSET, remaining);
+                memcpy((uint8_t*)&test_value_at_pos + remaining, buffer_, copy_len - remaining);
+            }
+
+            if (test_value_at_pos == EXPECTED_TEST_VALUE) {
+                if (search_pos + FRAME_LENGTH <= BUFFER_SIZE) {
+                    memcpy(&frame, buffer_ + search_pos, FRAME_LENGTH);
+                } else {
+                    size_t remaining = BUFFER_SIZE - search_pos;
+                    memcpy(&frame, buffer_ + search_pos, remaining);
+                    memcpy((uint8_t*)&frame + remaining, buffer_, FRAME_LENGTH - remaining);
+                }
+
+                tail_ = (search_pos + FRAME_LENGTH) % BUFFER_SIZE;
+                return true;
+            }
+        }
+
+        tail_ = (tail_ + 1) % BUFFER_SIZE;
+        return false;
+    }
+
+    void clear() {
+        head_ = tail_ = 0;
+    }
+
+    size_t getAvailable() const {
+        return available();
+    }
+};
+
 class CR5Commander
 {
 protected:
     static constexpr double PI = 3.1415926;
 
 private:
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     double current_joint_[6];
     double tool_vector_[6];
     RealTimeData real_time_data_;
@@ -137,11 +200,18 @@ private:
     std::shared_ptr<TcpClient> real_time_tcp_;
     std::shared_ptr<TcpClient> dash_board_tcp_;
 
+    FrameBuffer frame_buffer_;
+    int invalid_frame_count_ = 0;
+    static constexpr int MAX_INVALID_FRAMES = 50;
+
 public:
     explicit CR5Commander(const std::string& ip)
-        : current_joint_{}, tool_vector_{}, real_time_data_{}, is_running_(false)
+        : is_running_(false)
     {
-        is_running_ = false;
+        memset(current_joint_, 0, sizeof(current_joint_));
+        memset(tool_vector_, 0, sizeof(tool_vector_));
+        memset(&real_time_data_, 0, sizeof(real_time_data_));
+
         real_time_tcp_ = std::make_shared<TcpClient>(ip, 30004);
         dash_board_tcp_ = std::make_shared<TcpClient>(ip, 29999);
     }
@@ -168,32 +238,59 @@ public:
 
     void recvTask()
     {
+        uint8_t raw_buffer[4096];
         uint32_t has_read;
+
         while (is_running_) {
             if (real_time_tcp_->isConnect()) {
                 try {
-                    if (real_time_tcp_->tcpRecv(&real_time_data_, sizeof(real_time_data_), has_read, 5000)) {
-                        if (real_time_data_.len != 1440)
-                            continue;
+                    if (real_time_tcp_->tcpRecv(raw_buffer, sizeof(raw_buffer), has_read, 5000)) {
+                        frame_buffer_.push(raw_buffer, has_read);
 
-                        mutex_.lock();
-                        for (uint32_t i = 0; i < 6; i++)
-                            current_joint_[i] = deg2Rad(real_time_data_.q_actual[i]);
+                        RealTimeData frame;
+                        bool found_frame = false;
+                        while (frame_buffer_.extractFrame(frame)) {
+                            if (frame.len == 1440) {
+                                mutex_.lock();
+                                real_time_data_ = frame;
+                                for (uint32_t i = 0; i < 6; i++)
+                                    current_joint_[i] = deg2Rad(real_time_data_.q_actual[i]);
+                                memcpy(tool_vector_, real_time_data_.tool_vector_actual, sizeof(tool_vector_));
+                                mutex_.unlock();
 
-                        memcpy(tool_vector_, real_time_data_.tool_vector_actual, sizeof(tool_vector_));
-                        mutex_.unlock();
-                    } else {
-                        //                        ROS_WARN("tcp recv timeout");
+                                found_frame = true;
+                                invalid_frame_count_ = 0;
+                            }
+                        }
+
+                        if (!found_frame && frame_buffer_.getAvailable() >= FRAME_LENGTH * 4) {
+                            invalid_frame_count_++;
+                            if (invalid_frame_count_ >= MAX_INVALID_FRAMES) {
+                                ROS_ERROR("Too many invalid frames (%d), disconnecting and reconnecting...", invalid_frame_count_);
+                                
+                                // 主动断开并重连
+                                real_time_tcp_->disConnect();
+                                frame_buffer_.clear();
+                                invalid_frame_count_ = 0;
+                                
+                                // 短暂延迟后重连
+                                usleep(100000);  // 100ms
+                            }
+                        }
                     }
                 } catch (const TcpClientException& err) {
                     real_time_tcp_->disConnect();
+                    frame_buffer_.clear();
+                    invalid_frame_count_ = 0;
                     ROS_ERROR("tcp recv error : %s", err.what());
                 }
             } else {
+                frame_buffer_.clear();
+                invalid_frame_count_ = 0;
                 try {
                     real_time_tcp_->connect();
                 } catch (const TcpClientException& err) {
-                    ROS_ERROR("tcp recv error : %s", err.what());
+                    ROS_ERROR("tcp connect error : %s", err.what());
                     sleep(3);
                 }
             }
@@ -202,7 +299,7 @@ public:
                 try {
                     dash_board_tcp_->connect();
                 } catch (const TcpClientException& err) {
-                    ROS_ERROR("tcp recv error : %s", err.what());
+                    ROS_ERROR("dash tcp connect error : %s", err.what());
                     sleep(3);
                 }
             }
@@ -221,679 +318,42 @@ public:
 
     bool isEnable() const
     {
-        return real_time_data_.robot_mode == 5;
+        mutex_.lock();
+        bool result = real_time_data_.robot_mode == 5;
+        mutex_.unlock();
+        return result;
     }
 
     bool isConnected() const
     {
-        return dash_board_tcp_->isConnect() && real_time_tcp_->isConnect();
+        return dash_board_tcp_->isConnect();
     }
 
-    void enableRobot()
+    const RealTimeData* getRealData() const
     {
-        const char* cmd = "EnableRobot()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
+        mutex_.lock();
+        RealTimeData* result = const_cast<RealTimeData*>(&real_time_data_);
+        mutex_.unlock();
+        return result;
     }
 
-    void disableRobot()
+    uint16_t getRobotMode() const
     {
-        const char* cmd = "DisableRobot()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
+        mutex_.lock();
+        uint16_t result = real_time_data_.robot_mode;
+        mutex_.unlock();
+        return result;
     }
 
-    void clearError()
+    void dashboardDoCmd(const char* cmd, int32_t& err_id)
     {
-        const char* cmd = "ClearError()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
+        std::vector<std::string> result;
+        doTcpCmd(dash_board_tcp_, cmd, err_id, result);
     }
 
-    void speedFactor(int ratio)
+    void dashboardDoCmd(const char* cmd, int32_t& err_id, std::vector<std::string>& result)
     {
-        char cmd[100];
-        sprintf(cmd, "SpeedFactor(%d)", ratio);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void user(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "User(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void tool(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "Tool(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void setPayload(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetPayload(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Do(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "DO(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void doInstant(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "DOInstant(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void toolDO(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ToolDO(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void toolDOInstant(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ToolDOInstant(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void AO(const int32_t index, const int32_t value)
-    {
-        char cmd[100];
-        sprintf(cmd, "AO(%d, %d)", index, value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void AOInstant(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "AOInstant(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void AccJ(int r)
-    {
-        char cmd[100];
-        sprintf(cmd, "AccJ(%d)", r);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void AccL(int r)
-    {
-        char cmd[100];
-        sprintf(cmd, "AccL(%d)", r);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void VelJ(int r)
-    {
-        char cmd[100];
-        sprintf(cmd, "VelJ(%d)", r);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void VelL(int r)
-    {
-        char cmd[100];
-        sprintf(cmd, "VelL(%d)", r);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void CP(int r)
-    {
-        char cmd[100];
-        sprintf(cmd, "CP(%d)", r);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void PowerOn()
-    {
-        const char* cmd = "PowerOn()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RunScript(const std::string& projectName)
-    {
-        char cmd[100];
-        sprintf(cmd, "RunScript(%s)", projectName.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Stop()
-    {
-        const char* cmd = "Stop()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Pause()
-    {
-        const char* cmd = "Pause()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Continue()
-    {
-        const char* cmd = "Continue()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void EnableSafeSkin(int status)
-    {
-        char cmd[100];
-        sprintf(cmd, "EnableSafeSkin(%d)", status);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetSafeSkin(int part, int status)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetSafeSkin(%d,%d)", part, status);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetStartPose(const std::string& traceName)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetStartPose(%s)", traceName.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void StartPath(const std::string& traceName)
-    {
-        char cmd[100];
-        sprintf(cmd, "StartPath(%s)", traceName.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void PositiveKin(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "PositiveKin(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void InverseKin(const std::string& parameter)
-    {
-        char cmd[1000];
-        sprintf(cmd, "InverseKin(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetCollisionLevel(int level)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetCollisionLevel(%d)", level);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetAngle()
-    {
-        const char* cmd = "GetAngle()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetPose()
-    {
-        const char* cmd = "GetPose()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-    void GetPose(std::string arg)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetPose(%s)", arg.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void EmergencyStop(int value)
-    {
-        char cmd[100];
-        sprintf(cmd, "EmergencyStop(%d)", value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ModbusRTUCreate(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ModbusRTUCreate(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ModbusCreate(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ModbusCreate(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ModbusClose(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "ModbusClose(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetInBits(const std::string& parameter)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetInBits(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetInRegs(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "GetInRegs(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetCoils(int index, int addr, int count)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetCoils(%d,%d,%d)", index, addr, count);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetCoils(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetCoils(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetHoldRegs(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "GetHoldRegs(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetHoldRegs(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetHoldRegs(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetErrorID()
-    {
-        const char* cmd = "GetErrorID()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void DI(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "DI(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ToolDI(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "ToolDI(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void AI(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "AI(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ToolAI(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "ToolAI(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void DIGroup(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "DIGroup(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void DOGroup(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "DOGroup(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void BrakeControl(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "BrakeControl(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void StartDrag()
-    {
-        const char* cmd = "StartDrag()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void StopDrag()
-    {
-        const char* cmd = "StopDrag()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void DragSensivity(const std::string& parameter)
-    {
-        char cmd[100];
-        sprintf(cmd, "DragSensivity(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetDO(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetDO(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetAO(int index)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetAO(%d)", index);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetDOGroup(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "GetDOGroup(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetTool485(const std::string& parameter)
-    {
-        std::stringstream ss;
-        ss << "SetTool485(" << parameter << ")";
-        std::string arg(ss.str());
-        dash_board_tcp_->tcpSend(arg.c_str(), arg.size());
-    }
-
-    void SetSafeWallEnable(int index, int value)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetSafeWallEnable(%d,%d)", index, value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetToolPower(int status)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetToolPower(%d)", status);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetToolMode(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetToolMode(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetBackDistance(double distance)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetBackDistance(%0.3f)", distance);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetPostCollisionMode(int mode)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetPostCollisionMode(%d)", mode);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetUser(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetUser(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetTool(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "SetTool(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void CalcUser(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "CalcUser(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void CalcTool(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "CalcTool(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetInputBool(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetInputBool(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetInputInt(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetInputInt(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetInputFloat(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetInputFloat(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetOutputBool(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetOutputBool(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetOutputInt(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetOutputInt(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetOutputFloat(int address)
-    {
-        char cmd[100];
-        sprintf(cmd, "GetOutputFloat(%d)", address);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetOutputBool(int address, int value)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetOutputBool(%d,%d)", address, value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetOutputInt(int address, int value)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetOutputInt(%d,%d)", address, value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void SetOutputFloat(int address, double value)
-    {
-        char cmd[100];
-        sprintf(cmd, "SetOutputFloat(%d,%0.3f)", address, value);
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void movJ(const std::string& jointorpose)
-    {
-        char cmd[100];
-        sprintf(cmd, "MovJ(%s)", jointorpose.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void movL(const std::string& jointorpose)
-    {
-        char cmd[100];
-        sprintf(cmd, "MovL(%s)", jointorpose.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void MovLIO(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "MovLIO(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void MovJIO(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "MovJIO(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Arc(const std::string& parameter)
-    {
-        char cmd[1000];
-        sprintf(cmd, "Arc(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void Circle(const std::string& parameter)
-    {
-        char cmd[1000];
-        sprintf(cmd, "Circle(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void moveJog(const std::string& axis)
-    {
-        char cmd[100];
-        sprintf(cmd, "MoveJog(%s)", axis.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RelMovJTool(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "RelMovJTool(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RelMovLTool(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "RelMovLTool(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RelMovJUser(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "RelMovJUser(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RelMovLUser(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "RelMovLUser(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void RelJointMovJ(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "RelJointMovJ(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void GetCurrentCommandId()
-    {
-        const char* cmd = "GetCurrentCommandId()";
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ServoJ(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ServoJ(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void ServoP(const std::string& parameter)
-    {
-        char cmd[100];
-        assert(parameter.size() < 100);
-        sprintf(cmd, "ServoP(%s)", parameter.c_str());
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    void dashSendCmd(const char* cmd, uint32_t len)
-    {
-        dash_board_tcp_->tcpSend(cmd, strlen(cmd));
-    }
-
-    bool dashRecvCmd(char* cmd, uint32_t len, uint32_t timeout)
-    {
-        uint32_t has_read;
-        dash_board_tcp_->tcpRecv(cmd, len, has_read, timeout);
-        return has_read != 0;
+        doTcpCmd(dash_board_tcp_, cmd, err_id, result);
     }
 
     void motionDoCmd(const char* cmd, int32_t& err_id)
@@ -911,7 +371,7 @@ public:
     {
         try {
             std::vector<std::string> result_;
-            doTcpCmd(this->dash_board_tcp_, cmd.c_str(), err_id, result_);
+            doTcpCmd(dash_board_tcp_, cmd.c_str(), err_id, result_);
             return true;
         } catch (const TcpClientException& err) {
             ROS_ERROR("%s", err.what());
@@ -919,10 +379,24 @@ public:
             return false;
         }
     }
+
     bool callRosService(const std::string cmd, int32_t& err_id, std::vector<std::string>& result_)
+     {
+         try {
+             doTcpCmd(dash_board_tcp_, cmd.c_str(), err_id, result_);
+             return true;
+         } catch (const TcpClientException& err) {
+             ROS_ERROR("%s", err.what());
+             err_id = -1;
+             return false;
+         }
+     }
+
+    bool callRosService_f(const std::string& cmd, int32_t& err_id, std::string& robot_return)
     {
         try {
-            doTcpCmd(this->dash_board_tcp_, cmd.c_str(), err_id, result_);
+            std::vector<std::string> result_;
+            doTcpCmd_f(dash_board_tcp_, cmd.c_str(), err_id, robot_return, result_);
             return true;
         } catch (const TcpClientException& err) {
             ROS_ERROR("%s", err.what());
@@ -931,17 +405,69 @@ public:
         }
     }
 
-    uint16_t getRobotMode() const
+    static std::vector<std::string> regexRecv(std::string getRecvInfo)
     {
-        return real_time_data_.robot_mode;
+        std::regex pattern("-?\\d+");
+        std::smatch matches;
+        std::string::const_iterator searchStart(getRecvInfo.cbegin());
+        std::vector<std::string> vecErrorId;
+        while (std::regex_search(searchStart, getRecvInfo.cend(), matches, pattern)) {
+            for (auto& match : matches) {
+                vecErrorId.push_back(match.str());
+            }
+            searchStart = matches.suffix().first;
+        }
+        return vecErrorId;
+    };
+
+    static void doTcpCmd_f(std::shared_ptr<TcpClient>& tcp, const char* cmd, int32_t& err_id,
+                          std::string& robot_return, std::vector<std::string>& result)
+    {
+        std::ignore = result;
+        try {
+            uint32_t has_read;
+            char buf[1024];
+            memset(buf, 0, sizeof(buf));
+
+            ROS_INFO("tcp send cmd : %s", cmd);
+            tcp->tcpSend(cmd, strlen(cmd));
+
+            char* recv_ptr = buf;
+
+            while (true) {
+                bool err = tcp->tcpRecv(recv_ptr, 1024, has_read, 0);
+                if (!err) {
+                    sleep(0.01);
+                    continue;
+                }
+                if (*(recv_ptr + strlen(recv_ptr) - 1) == ';')
+                    break;
+
+                recv_ptr = recv_ptr + strlen(recv_ptr);
+            }
+
+            int pose1 = 0;
+            for (int i = 0; i < 2000; i++) {
+                if (recv_ptr[i] == '{') {
+                    std::string str(recv_ptr);
+                    std::string result_str = str.substr(0, i - 1);
+                    err_id = std::stoi(result_str);
+                    ROS_INFO("ErrorID: %d", err_id);
+                    pose1 = i;
+                }
+                if (recv_ptr[i] == '}') {
+                    std::string str(recv_ptr);
+                    robot_return = str.substr(pose1, i - pose1 + 1);
+                    break;
+                }
+            }
+
+            ROS_INFO("tcp recv feedback : %s", buf);
+        } catch (const std::logic_error& err) {
+            ROS_ERROR("tcpDoCmd_f failed : %s", err.what());
+        }
     }
 
-    const RealTimeData* getRealData() const
-    {
-        return &real_time_data_;
-    }
-
-private:
     static void doTcpCmd(std::shared_ptr<TcpClient>& tcp, const char* cmd, int32_t& err_id,
                          std::vector<std::string>& result)
     {
@@ -967,68 +493,19 @@ private:
                 recv_ptr = recv_ptr + strlen(recv_ptr);
             }
             result = regexRecv(std::string(buf));
-            if (result.size() >= 2U) {
-                if (stoi(result[0]) == 0) {
-                    err_id = stoi(result[1]);
-                } else {
-                    err_id = 2147483647;    // int-max
-                }
+            if (result.size() >= 1U) {
+                err_id = stoi(result[0]);
             }
 
-            ROS_INFO("tcp recv feedback : %s", buf);    // FIXME parse the buf may be better
+            ROS_INFO("tcp recv feedback : %s", buf);
         } catch (const std::logic_error& err) {
             ROS_ERROR("tcpDoCmd failed : %s", err.what());
         }
     }
 
-    static std::string parseString(const std::string& str)
-    {
-        std::string returnInfomation = "ErrorID: ";
-
-        std::size_t pos = str.find(',');
-        if (pos == std::string::npos)
-            throw std::logic_error(std::string("Has no ',' found : ") + str);
-        returnInfomation += str.substr(0, pos);
-        returnInfomation += " ReturnValue: ";
-
-        // parse result
-        std::size_t start_pos = str.find('{');
-        if (start_pos == std::string::npos)
-            throw std::logic_error(std::string("Has no '{': ") + str);
-        std::size_t end_pos = str.find('}');
-        if (end_pos == std::string::npos)
-            throw std::logic_error(std::string("Has no '}': ") + str);
-
-        assert(end_pos > start_pos);
-        returnInfomation += str.substr(start_pos + 1, end_pos - start_pos - 1);
-
-        returnInfomation += " cmd = ";
-        returnInfomation += str.substr(end_pos + 1);
-        return returnInfomation;
-    }
-
-    static inline double rad2Deg(double rad)
-    {
-        return rad * 180.0 / PI;
-    }
-
+private:
     static inline double deg2Rad(double deg)
     {
         return deg * PI / 180.0;
     }
-
-    static std::vector<std::string> regexRecv(std::string getRecvInfo)
-    {
-        std::regex pattern("-?\\d+");
-        std::smatch matches;
-        std::string::const_iterator searchStart(getRecvInfo.cbegin());
-        std::vector<std::string> vecErrorId;
-        while (std::regex_search(searchStart, getRecvInfo.cend(), matches, pattern)) {
-            for (auto& match : matches) {
-                vecErrorId.push_back(match.str());
-            }
-            searchStart = matches.suffix().first;
-        }
-        return vecErrorId;
-    };
 };

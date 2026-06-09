@@ -1,2 +1,2 @@
-sensors:
-  []
+# No sensors configured - this disables the sensor manager to avoid errors
+sensors: []

@@ -48,37 +48,44 @@ int main(int argc, char* argv[])
         for (uint32_t i = 0; i < 6; i++)
         {
             joint_state_msg.position.push_back(0.0);
+            joint_state_msg.velocity.push_back(0.0);
+            joint_state_msg.effort.push_back(0.0);
             joint_state_msg.name.push_back(std::string("joint") + std::to_string(i + 1));
         }
 
         CRRobot robot(private_node, ss);
 
-        double rate_vale = private_node.param("JointStatePublishRate", 10);
+        double rate_vale = private_node.param("joint_publish_rate", 10);
 
         robot.init();
         ros::Rate rate(rate_vale);
-        double position[6];
+        double position[6] = {0};
         while (ros::ok())
         {
             //
             // publish joint state
             //
-            robot.getJointState(position);
+            if (robot.isConnected()) {
+                robot.getJointState(position);
+            }
+            // 断开连接时保持最后有效位置，不置零
             joint_state_msg.header.stamp = ros::Time::now();
-            joint_state_msg.header.frame_id = "dummy_link";
+            joint_state_msg.header.frame_id = "";
             for (uint32_t i = 0; i < 6; i++)
                 joint_state_msg.position[i] = position[i];
             joint_state_pub.publish(joint_state_msg);
 
-            double val[6];
-            robot.getToolVectorActual(val);
-            tool_vector_actual_msg.x = val[0];
-            tool_vector_actual_msg.y = val[1];
-            tool_vector_actual_msg.z = val[2];
-            tool_vector_actual_msg.rx = val[3];
-            tool_vector_actual_msg.ry = val[4];
-            tool_vector_actual_msg.rz = val[5];
-            tool_vector_pub.publish(tool_vector_actual_msg);
+            if (robot.isConnected()) {
+                double val[6];
+                robot.getToolVectorActual(val);
+                tool_vector_actual_msg.x = val[0];
+                tool_vector_actual_msg.y = val[1];
+                tool_vector_actual_msg.z = val[2];
+                tool_vector_actual_msg.rx = val[3];
+                tool_vector_actual_msg.ry = val[4];
+                tool_vector_actual_msg.rz = val[5];
+                tool_vector_pub.publish(tool_vector_actual_msg);
+            }
 
             //
             // publish robot status

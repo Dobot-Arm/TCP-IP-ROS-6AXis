@@ -66,9 +66,9 @@ void TcpClient::disConnect()
 {
     if (is_connected_)
     {
-        fd_ = -1;
+        ::close(fd_);       // 先真正关闭socket
+        fd_ = -1;           // 然后设置无效标记
         is_connected_ = false;
-        ::close(fd_);
     }
 }
 

@@ -1,5 +1,6 @@
 <launch>
   <!-- Define the controller manager plugin to use for trajectory execution -->
+  <arg name="execution_type" />
   <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
 
   <!-- loads controller list to the param server -->

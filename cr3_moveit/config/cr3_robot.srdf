@@ -21,9 +21,9 @@
     <group_state name="home" group="arm">
         <joint name="joint1" value="0" />
         <joint name="joint2" value="0" />
-        <joint name="joint3" value="0" />
+        <joint name="joint3" value="1.57" />
         <joint name="joint4" value="0" />
-        <joint name="joint5" value="0" />
+        <joint name="joint5" value="-1.57" />
         <joint name="joint6" value="0" />
     </group_state>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
@@ -33,8 +33,10 @@
     <disable_collisions link1="Link1" link2="Link4" reason="Never" />
     <disable_collisions link1="Link1" link2="base_link" reason="Adjacent" />
     <disable_collisions link1="Link2" link2="Link3" reason="Adjacent" />
+    <disable_collisions link1="Link2" link2="base_link" reason="Never" />
     <disable_collisions link1="Link3" link2="Link4" reason="Adjacent" />
     <disable_collisions link1="Link4" link2="Link5" reason="Adjacent" />
     <disable_collisions link1="Link4" link2="Link6" reason="Never" />
+    <disable_collisions link1="Link4" link2="base_link" reason="Never" />
     <disable_collisions link1="Link5" link2="Link6" reason="Adjacent" />
 </robot>

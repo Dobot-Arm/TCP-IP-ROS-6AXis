@@ -2,18 +2,14 @@
 <!--
   Usage:
     roslaunch cr5_bringup cr5_bringup.launch robot_ip:=<value>
+    roslaunch dobot_moveit moveit.launch fake_execution:=true  (for simulation)
 -->
 <launch>
   <arg name="DOBOT_TYPE" default="$(env DOBOT_TYPE)" />
-  <include file="$(dirname)/../../$(arg DOBOT_TYPE)_moveit/launch/$(arg DOBOT_TYPE)_moveit.launch"/>
+  <arg name="fake_execution" default="false" />
+  <param name="/move_group/planning/velocity_scaling_factor" value="0.2" />
+  <param name="/move_group/planning/acceleration_scaling_factor" value="0.2" />
+  <include file="$(dirname)/../../$(arg DOBOT_TYPE)_moveit/launch/$(arg DOBOT_TYPE)_moveit.launch">
+    <arg name="fake_execution" value="$(arg fake_execution)" />
+  </include>
 </launch>
-
-<!-- <launch>
-  <arg name="DOBOT_TYPE" default="$(env DOBOT_TYPE)" />
-
-  <export DOBOT_MOVEIT_PARENT_PATH=$(dirname $(rospack find dobot_moveit))
-  <arg name="Dobot_parent_path" value="$(env DOBOT_MOVEIT_PARENT_PATH)" />
-  <arg name="Dobot_path" default="$(env DOBOT_TYPE)_moveit" />
-  <arg name="Target_path" value="$(arg Dobot_parent_path)/$(arg Dobot_path)/launch" />
-  <include file="$(arg Target_path)/$(arg Dobot_path).launch"/>
-</launch> -->

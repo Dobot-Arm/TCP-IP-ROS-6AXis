@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
         CR5Robot robot(private_node, ss);
 
-        double rate_vale = private_node.param("JointStatePublishRate", 10);
+        double rate_vale = private_node.param("joint_publish_rate", 10);
 
         robot.init();
         ros::Rate rate(rate_vale);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
             //
             robot.getJointState(position);
             joint_state_msg.header.stamp = ros::Time::now();
-            joint_state_msg.header.frame_id = "dummy_link";
+            joint_state_msg.header.frame_id = "";
             for (uint32_t i = 0; i < 6; i++)
                 joint_state_msg.position[i] = position[i];
             joint_state_pub.publish(joint_state_msg);

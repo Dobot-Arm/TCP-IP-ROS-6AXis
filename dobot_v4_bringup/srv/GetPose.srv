@@ -1,5 +1,3 @@
-string user
-string tool
 ---
-string pose
 int32 res
+string robot_return

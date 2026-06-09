@@ -8,14 +8,9 @@
     <!-- By default, we are not in debug mode -->
     <arg name="debug" default="false"/>
 
-    <!--
-    By default, hide joint_state_publisher's GUI
+    <!-- fake_execution: true for Gazebo simulation, false for real robot -->
+    <arg name="fake_execution" default="false"/>
 
-    MoveIt!'s "demo" mode replaces the real robot driver with the joint_state_publisher.
-    The latter one maintains and publishes the current joint configuration of the simulated robot.
-    It also provides a GUI to move the simulated robot around "manually".
-    This corresponds to moving around the real robot without the use of MoveIt.
-    -->
     <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
     <include file="$(find cr7_moveit)/launch/planning_context.launch">
         <arg name="load_robot_description" value="true"/>
@@ -23,14 +18,19 @@
 
     <!-- If needed, broadcast static tf for robot root -->
 
+    <!-- Publish fake joint states from fake controller (only for simulation) -->
+    <node if="$(arg fake_execution)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <rosparam param="source_list">[/move_group/fake_controller_joint_states]</rosparam>
+    </node>
+
     <!-- Given the published joint states, publish tf for the robot links -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true"
           output="screen"/>
 
-    <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) -->
+    <!-- Run the main MoveIt! executable -->
     <include file="$(find cr7_moveit)/launch/move_group.launch">
         <arg name="allow_trajectory_execution" value="true"/>
-        <arg name="fake_execution" value="false"/>
+        <arg name="fake_execution" value="$(arg fake_execution)"/>
         <arg name="info" value="true"/>
         <arg name="debug" value="$(arg debug)"/>
     </include>

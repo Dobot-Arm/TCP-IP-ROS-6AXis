@@ -147,4 +147,5 @@ cr5_arm:
     - SPARS
     - SPARStwo
   projection_evaluator: joints(joint1,joint2)
-  longest_valid_segment_fraction: 0.005
+  longest_valid_segment_fraction: 0.001
+  max_waypoint_count: 100

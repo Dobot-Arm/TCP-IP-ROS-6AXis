@@ -2,7 +2,7 @@
 <launch>
   <arg name="DOBOT_TYPE" default="$(env DOBOT_TYPE)" />
   <include file="$(find dobot_gazebo)/launch/$(arg DOBOT_TYPE)_robot_description.xml"/>
-  <include file="$(find dobot_gazebo)/launch/robot_control.xml"/>
+  <!-- Removed robot_control.xml - using JointPoseTrajectory plugin instead -->
 
   <!--Launch a gazebo world-->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
