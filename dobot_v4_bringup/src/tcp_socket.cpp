@@ -41,11 +41,33 @@ void TcpClient::close()
 
 void TcpClient::connect()
 {
-    if (fd_ < 0)
+    // 确保旧的socket完全关闭
+    if (fd_ >= 0)
     {
-        fd_ = ::socket(AF_INET, SOCK_STREAM, 0);
-        if (fd_ < 0)
-            throw TcpClientException(toString() + std::string(" socket : ") + strerror(errno));
+        ::close(fd_);
+        fd_ = -1;
+        is_connected_ = false;
+    }
+
+    fd_ = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (fd_ < 0)
+        throw TcpClientException(toString() + std::string(" socket : ") + strerror(errno));
+
+    // 设置socket选项，允许地址重用
+    int opt = 1;
+    if (::setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        ::close(fd_);
+        fd_ = -1;
+        throw TcpClientException(toString() + std::string(" setsockopt SO_REUSEADDR : ") + strerror(errno));
+    }
+
+    // 设置socket选项，允许端口重用
+    if (::setsockopt(fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0)
+    {
+        ::close(fd_);
+        fd_ = -1;
+        throw TcpClientException(toString() + std::string(" setsockopt SO_REUSEPORT : ") + strerror(errno));
     }
 
     sockaddr_in addr = {};
@@ -56,7 +78,11 @@ void TcpClient::connect()
     addr.sin_port = htons(port_);
 
     if (::connect(fd_, (sockaddr*)&addr, sizeof(addr)) < 0)
+    {
+        ::close(fd_);
+        fd_ = -1;
         throw TcpClientException(toString() + std::string(" connect : ") + strerror(errno));
+    }
     is_connected_ = true;
 
     ROS_INFO("%s : connect successfully", toString().c_str());
@@ -75,6 +101,20 @@ void TcpClient::disConnect()
 bool TcpClient::isConnect() const
 {
     return is_connected_;
+}
+
+bool TcpClient::isConnected() const
+{
+    if (!is_connected_ || fd_ < 0)
+        return false;
+
+    // 使用getsockopt检查socket状态
+    int error = 0;
+    socklen_t len = sizeof(error);
+    if (::getsockopt(fd_, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+        return false;
+
+    return error == 0;
 }
 
 void TcpClient::tcpSend(const void* buf, uint32_t len)
@@ -136,15 +176,58 @@ bool TcpClient::tcpRecv(void* buf, uint32_t len, uint32_t& has_read, uint32_t ti
             throw TcpClientException(toString() + std::string(" tcp server has disconnected"));
         }
         len -= err;
-        tmp += (err - 1);
+        tmp += err;
+        has_read += err;
+    }
 
-        if(tmp[0] == ';'){
-            has_read += err;
-            return true;
+    return true;
+}
+
+bool TcpClient::tcpRecvWithDelimiter(void* buf, uint32_t len, uint32_t& has_read, uint32_t timeout)
+{
+    uint8_t* tmp = (uint8_t*)buf;
+
+    fd_set read_fds;
+    timeval tv = { 0, 0 };
+
+    has_read = 0;
+    while(len)
+    {
+        FD_ZERO(&read_fds);
+        FD_SET(fd_, &read_fds);
+
+        tv.tv_sec = timeout / 1000;
+        tv.tv_usec = (timeout % 1000) * 1000;
+        int err = ::select(fd_ + 1, &read_fds, nullptr, nullptr, &tv);
+        if (err < 0)
+        {
+            disConnect();
+            throw TcpClientException(toString() + std::string(" select() : ") + strerror(errno));
+        }
+        else if (err == 0)
+        {
+            return false;
         }
 
-        tmp++;
+        err = (int)::read(fd_, tmp, len);
+        if (err < 0)
+        {
+            disConnect();
+            throw TcpClientException(toString() + std::string(" ::read() ") + strerror(errno));
+        }
+        else if (err == 0)
+        {
+            disConnect();
+            throw TcpClientException(toString() + std::string(" tcp server has disconnected"));
+        }
+        len -= err;
+        tmp += err;
         has_read += err;
+
+        // 检查是否以';'结尾（服务器命令结束标志）
+        if (*(tmp - 1) == ';') {
+            return true;
+        }
     }
 
     return true;

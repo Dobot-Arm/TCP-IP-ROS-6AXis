@@ -1,7 +1,8 @@
 #include "rosDemoCRV4.h"
+#include <chrono>
+
 static const char* kAlarmServoJsonFile = "alarmFile/alarm_servo.json";
 static const char* kAlarmControllerJsonFile = "alarmFile/alarm_controller.json";
-// Include other necessary headers
 
 RosDemoCRV4::RosDemoCRV4(ros::NodeHandle* nh)
 {
@@ -13,24 +14,35 @@ RosDemoCRV4::RosDemoCRV4(ros::NodeHandle* nh)
     memset(&feedbackData, 0, sizeof(feedbackData));
 
     subFeedInfo = nh->subscribe("/dobot_v4_bringup/msg/FeedInfo", 10, &RosDemoCRV4::getFeedBackInfo, this);
-    // Add more services if needed
 
     threadParseRobotError = std::thread(&RosDemoCRV4::parseRobotAlarm, this);
-    threadParseRobotError.detach();
-
     threadClearRobotError = std::thread(&RosDemoCRV4::warmRobotError, this);
-    threadClearRobotError.detach();
+}
+
+RosDemoCRV4::~RosDemoCRV4()
+{
+    stop();
+}
+
+void RosDemoCRV4::stop()
+{
+    m_running.store(false);
+    if (threadClearRobotError.joinable()) {
+        threadClearRobotError.join();
+    }
+    if (threadParseRobotError.joinable()) {
+        threadParseRobotError.join();
+    }
 }
 
 void RosDemoCRV4::getFeedBackInfo(const std_msgs::String::ConstPtr& msg)
 {
-    std::string feedIndo = msg->data;
-    // 从 JSON 字符串中提取数组
-    if (feedIndo.empty()) {
+    std::string feedInfo = msg->data;
+    if (feedInfo.empty()) {
         return;
     }
 
-    nlohmann::json parsedJson = nlohmann::json::parse(feedIndo);
+    nlohmann::json parsedJson = nlohmann::json::parse(feedInfo);
     std::unique_lock<std::mutex> lockInfo(m_mutex);
     if (parsedJson.count("EnableStatus") && parsedJson["EnableStatus"].is_number()) {
         feedbackData.EnableStatus = parsedJson["EnableStatus"];
@@ -48,13 +60,12 @@ void RosDemoCRV4::getFeedBackInfo(const std_msgs::String::ConstPtr& msg)
 
 void RosDemoCRV4::warmRobotError()
 {
-    while (true) {
+    while (m_running.load()) {
         {
             std::unique_lock<std::mutex> lockInfo(m_mutex);
             if (feedbackData.ErrorStatus) {
                 rosdemo_v4::GetErrorID srvGetError;
                 static std::vector<int> errorId;
-                // 请求服务
                 if (SendService(m_getErrorID, srvGetError)) {
                     std::vector<int> errorIdNew;
                     for (int i = 0; i < srvGetError.response.error_id.size(); i++) {
@@ -97,9 +108,8 @@ void RosDemoCRV4::warmRobotError()
                             }
                         }
                     }
-
                 } else {
-                    ROS_ERROR("geterrorid service  fail");
+                    ROS_ERROR("geterrorid service fail");
                 }
             }
         }
@@ -107,10 +117,10 @@ void RosDemoCRV4::warmRobotError()
     }
 }
 
-void RosDemoCRV4::movePoint(std::vector<double>& point, int& currentCommandID)
+void RosDemoCRV4::movePoint(const std::vector<double>& point, int& currentCommandID)
 {
     if (point.size() < 6U) {
-        ROS_ERROR("MovJ params is  ERROR");
+        ROS_ERROR("MovJ params is ERROR");
         return;
     }
 
@@ -125,37 +135,35 @@ void RosDemoCRV4::movePoint(std::vector<double>& point, int& currentCommandID)
     if (!SendService(m_movj, srvMovJ)) {
         ROS_ERROR("MovJ service fail");
     } else {
-        currentCommandID = int(srvMovJ.response.res);
-        ROS_INFO("CurrentCommandID  %d", currentCommandID);
+        currentCommandID = static_cast<int>(srvMovJ.response.res);
+        ROS_INFO("CurrentCommandID %d", currentCommandID);
     }
 }
 
 void RosDemoCRV4::finishPoint(int currentCommandID)
 {
-    while (true) {
+    while (m_running.load()) {
+        {
+            std::unique_lock<std::mutex> lockInfo(m_mutex);
+            if (feedbackData.CurrentCommandID > currentCommandID) {
+                ROS_INFO("FINISH %d, %d", feedbackData.CurrentCommandID, currentCommandID);
+                return;
+            }
+            if ((feedbackData.CurrentCommandID == currentCommandID) && (feedbackData.RobotMode == 5)) {
+                ROS_INFO("finish %d", currentCommandID);
+                return;
+            }
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        std::unique_lock<std::mutex> lockInfo(m_mutex);
-        if (feedbackData.CurrentCommandID > currentCommandID) {
-            ROS_INFO("FINISH %d , %d", feedbackData.CurrentCommandID, currentCommandID);
-            break;
-        }
-        if ((feedbackData.CurrentCommandID == currentCommandID) && (feedbackData.RobotMode == 5)) {
-            ROS_INFO("finsih %d", currentCommandID);
-            break;
-        }
-        lockInfo.unlock();
-        sleep(0.01);
     }
 }
 
 void RosDemoCRV4::parseRobotAlarm()
 {
-    // 获取当前cpp文件所在的目录路径
     std::string currentDirectory = __FILE__;
     size_t lastSlash = currentDirectory.find_last_of("/");
     std::string directory = currentDirectory.substr(0, lastSlash + 1);
 
-    // 拼接目标json文件的路径
     std::string jsonServoFilePath = directory + kAlarmServoJsonFile;
     std::string jsonControllerFilePath = directory + kAlarmControllerJsonFile;
 
@@ -163,11 +171,9 @@ void RosDemoCRV4::parseRobotAlarm()
         std::ifstream jsonFile(filePath);
         if (jsonFile.is_open()) {
             jsonFile >> jsonData;
-
-            // 在这里使用 jsonData 对象访问json数据
-            jsonFile.close();    // 关闭文件流，释放资源
+            jsonFile.close();
         } else {
-            ROS_ERROR("Failed to open json file : %s", filePath.c_str());
+            ROS_ERROR("Failed to open json file: %s", filePath.c_str());
         }
     };
 

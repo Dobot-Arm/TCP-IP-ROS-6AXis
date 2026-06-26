@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
         robot.init();
         ros::Rate rate(rate_vale);
-        double position[6];
+        double position[6] = {0};
         while (ros::ok())
         {
             //
@@ -67,10 +67,8 @@ int main(int argc, char* argv[])
             //
             if (robot.isConnected()) {
                 robot.getJointState(position);
-            } else {
-                // 机器人未连接时，将位置数据设置为0
-                memset(position, 0, sizeof(position));
             }
+            // 断开连接时保持最后有效位置，不置零
             joint_state_msg.header.stamp = ros::Time::now();
             joint_state_msg.header.frame_id = "";
             for (uint32_t i = 0; i < 6; i++)

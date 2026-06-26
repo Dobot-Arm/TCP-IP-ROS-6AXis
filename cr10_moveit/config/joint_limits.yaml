@@ -3,32 +3,32 @@
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
   joint1:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.1416  # 180 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 6.28  # 2x velocity as safe acceleration limit
   joint2:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.1416  # 180 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 6.28
   joint3:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.927   # 225 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 7.854
   joint4:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.927   # 225 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 7.854
   joint5:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.927   # 225 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 7.854
   joint6:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+    has_velocity_limits: true
+    max_velocity: 3.927   # 225 deg/s
+    has_acceleration_limits: true
+    max_acceleration: 7.854

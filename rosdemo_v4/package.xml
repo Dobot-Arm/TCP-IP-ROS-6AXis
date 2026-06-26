@@ -11,7 +11,10 @@
     <exec_depend>roscpp</exec_depend>
 
     <build_depend>message_generation</build_depend>
-    <exec_depend>message_generation</exec_depend>
+    <exec_depend>message_runtime</exec_depend>
+
+    <build_depend>nlohmann_json</build_depend>
+    <exec_depend>nlohmann_json</exec_depend>
 
     <buildtool_depend>catkin</buildtool_depend>
 

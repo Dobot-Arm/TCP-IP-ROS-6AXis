@@ -46,9 +46,8 @@
 
   <!-- Planning Functionality -->
   <include ns="move_group" file="$(find cr16_moveit)/launch/planning_pipeline.launch.xml">
-    <arg name="pipeline" value="$(arg pipeline)" />
-    <param name="capabilities" value="$(arg capabilities)"/>
-    <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
+    <arg name="capabilities" value="$(arg capabilities)"/>
+    <arg name="disable_capabilities" value="$(arg disable_capabilities)"/>
   </include>
 
   <!-- Trajectory Execution Functionality -->
@@ -75,7 +74,12 @@
     <param name="capabilities" value="$(arg capabilities)"/>
     <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
 
+    <!-- Set default planning pipeline -->
+    <param name="default_planning_pipeline" value="$(arg pipeline)" />
+
+    <!-- Trajectory execution parameters -->
     <param name="trajectory_execution/allowed_execution_duration_scaling" value="6"/>
+    <param name="trajectory_execution/allowed_goal_duration_margin" value="0.5"/>
     <param name="trajectory_execution/execution_duration_monitoring" value="false"/>
 
 

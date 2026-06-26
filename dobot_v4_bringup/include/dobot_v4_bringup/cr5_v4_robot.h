@@ -137,6 +137,10 @@ private:
     uint16_t last_robot_mode_;
     std::thread threadPubFeedBackInfo;
     ros::Publisher pubFeedInfo;
+    std::atomic<bool> stop_thread_{false};
+    std::atomic<bool> stop_requested_{false};  // 停止请求标志
+    ros::Time trajectory_start_;  // 轨迹开始时间
+    static const double SERVOJ_DURATION;  // servoj 默认持续时间
 
 public:
     /**

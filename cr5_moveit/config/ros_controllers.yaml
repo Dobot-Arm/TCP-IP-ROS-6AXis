@@ -24,7 +24,7 @@ joint_state_controller:
 controller_list:
   - name: cr5_robot/joint_controller
     action_ns: follow_joint_trajectory
-    default: true
+    default: True
     type: FollowJointTrajectory
     joints:
       - joint1

@@ -5,13 +5,14 @@
   <!-- Removed robot_control.xml - using JointPoseTrajectory plugin instead -->
 
   <!--Launch a gazebo world-->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find dobot_gazebo)/worlds/willow_garage.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
     <arg name="headless" value="false"/>
     <arg name="debug" value="false"/>
+  </include>
   <node 
      name="urdf_spawner" 
      pkg="gazebo_ros" 

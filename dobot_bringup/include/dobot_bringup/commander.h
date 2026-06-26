@@ -19,6 +19,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <regex>
+#include <algorithm>
 #include <dobot_bringup/tcp_socket.h>
 
 #pragma pack(push, 1)
@@ -240,6 +241,8 @@ public:
     {
         uint8_t raw_buffer[4096];
         uint32_t has_read;
+        int reconnect_attempts = 0;
+        const int max_reconnect_attempts = 10;
 
         while (is_running_) {
             if (real_time_tcp_->isConnect()) {
@@ -260,6 +263,7 @@ public:
 
                                 found_frame = true;
                                 invalid_frame_count_ = 0;
+                                reconnect_attempts = 0;  // 重置重连计数器
                             }
                         }
 
@@ -272,9 +276,12 @@ public:
                                 real_time_tcp_->disConnect();
                                 frame_buffer_.clear();
                                 invalid_frame_count_ = 0;
+                                reconnect_attempts++;
                                 
-                                // 短暂延迟后重连
-                                usleep(100000);  // 100ms
+                                // 指数退避：100ms * (2^min(attempts, 6))
+                                int delay_ms = 100 * (1 << std::min(reconnect_attempts, 6));
+                                ROS_INFO("Waiting %d ms before reconnect...", delay_ms);
+                                usleep(delay_ms * 1000);
                             }
                         }
                     }
@@ -282,34 +289,92 @@ public:
                     real_time_tcp_->disConnect();
                     frame_buffer_.clear();
                     invalid_frame_count_ = 0;
+                    reconnect_attempts++;
                     ROS_ERROR("real time tcp recv error : %s", err.what());
+                    
+                    // 当30004端口断开时，主动断开29999和30003端口，确保所有端口同步重连
+                    if (dash_board_tcp_->isConnect()) {
+                        ROS_INFO("Real-time port disconnected, also disconnecting dashboard port 29999...");
+                        dash_board_tcp_->disConnect();
+                    }
+                    if (motion_cmd_tcp_->isConnect()) {
+                        ROS_INFO("Real-time port disconnected, also disconnecting motion command port 30003...");
+                        motion_cmd_tcp_->disConnect();
+                    }
+                    
+                    // 指数退避延迟
+                    int delay_ms = 100 * (1 << std::min(reconnect_attempts, 6));
+                    ROS_INFO("Waiting %d ms before reconnect attempt %d...", delay_ms, reconnect_attempts);
+                    usleep(delay_ms * 1000);
                 }
             } else {
                 frame_buffer_.clear();
                 invalid_frame_count_ = 0;
                 try {
                     real_time_tcp_->connect();
+                    reconnect_attempts = 0;  // 连接成功后重置计数器
                 } catch (const TcpClientException& err) {
+                    reconnect_attempts++;
                     ROS_ERROR("move cmd tcp connect error : %s", err.what());
-                    sleep(3);
+                    
+                    // 当30004连接失败时，也断开29999和30003端口
+                    if (dash_board_tcp_->isConnect()) {
+                        ROS_INFO("Real-time port connect failed, also disconnecting dashboard port 29999...");
+                        dash_board_tcp_->disConnect();
+                    }
+                    if (motion_cmd_tcp_->isConnect()) {
+                        ROS_INFO("Real-time port connect failed, also disconnecting motion command port 30003...");
+                        motion_cmd_tcp_->disConnect();
+                    }
+                    
+                    // 指数退避：1s, 2s, 4s, 8s, 16s, 32s (最大)
+                    int delay_sec = 1 << std::min(reconnect_attempts, 5);
+                    if (reconnect_attempts > max_reconnect_attempts) {
+                        ROS_WARN("Max reconnection attempts reached, waiting 30s...");
+                        sleep(30);
+                        reconnect_attempts = 0;  // 重置计数器，允许继续尝试
+                    } else {
+                        ROS_INFO("Waiting %d seconds before reconnect attempt %d...", delay_sec, reconnect_attempts);
+                        sleep(delay_sec);
+                    }
                 }
             }
 
             if (!dash_board_tcp_->isConnect()) {
+                static int dash_reconnect_attempts = 0;
                 try {
                     dash_board_tcp_->connect();
+                    dash_reconnect_attempts = 0;  // 连接成功，重置计数器
+                    // 等待连接稳定
+                    usleep(500000);  // 500ms
                 } catch (const TcpClientException& err) {
+                    dash_reconnect_attempts++;
                     ROS_ERROR("dash tcp connect error : %s", err.what());
-                    sleep(3);
+                    // 使用指数退避，但最多等待5秒
+                    int delay_sec = 1 << std::min(dash_reconnect_attempts, 2);
+                    sleep(delay_sec);
+                    if (dash_reconnect_attempts > 20) {
+                        dash_reconnect_attempts = 0;  // 重置，防止溢出
+                    }
                 }
             }
 
             if (!motion_cmd_tcp_->isConnect()) {
+                static int motion_reconnect_attempts = 0;
                 try {
                     motion_cmd_tcp_->connect();
+                    motion_reconnect_attempts = 0;  // 连接成功，重置计数器
+                    // 等待连接稳定
+                    usleep(500000);  // 500ms
                 } catch (const TcpClientException& err) {
+                    motion_reconnect_attempts++;
                     ROS_ERROR("motion cmd tcp connect error : %s", err.what());
-                    sleep(3);
+                    // 使用指数退避，但最多等待5秒
+                    int delay_sec = 1 << std::min(motion_reconnect_attempts, 2);
+                    sleep(delay_sec);
+                    if (motion_reconnect_attempts > 20) {
+                        motion_reconnect_attempts = 0;  // 重置，防止溢出
+                    }
                 }
             }
         }
@@ -338,12 +403,11 @@ public:
         return dash_board_tcp_->isConnect() && motion_cmd_tcp_->isConnect();
     }
 
-    const RealTimeData* getRealData() const
+    void getRealData(RealTimeData& data) const
     {
         mutex_.lock();
-        RealTimeData* result = const_cast<RealTimeData*>(&real_time_data_);
+        data = real_time_data_;
         mutex_.unlock();
-        return result;
     }
 
     uint16_t getRobotMode() const
@@ -422,6 +486,23 @@ private:
     static void tcpDoCmd(std::shared_ptr<TcpClient>& tcp, const char* cmd, int32_t& err_id,
                          std::vector<std::string>& result)
     {
+        result.clear();
+        err_id = 0;
+        
+        // 检查连接状态
+        if (!tcp->isConnect()) {
+            ROS_WARN("tcpDoCmd : TCP not connected, attempting to reconnect...");
+            try {
+                tcp->connect();
+                // 等待连接稳定
+                usleep(200000);  // 200ms
+            } catch (const TcpClientException& err) {
+                ROS_ERROR("tcpDoCmd : reconnect failed : %s", err.what());
+                err_id = -1;
+                return;
+            }
+        }
+        
         try {
             uint32_t has_read;
             char buf[1024];
@@ -430,24 +511,26 @@ private:
             ROS_INFO("tcp send cmd : %s", cmd);
             tcp->tcpSend(cmd, strlen(cmd));
 
-            char* recv_ptr = buf;
-
-            while (true) {
-                bool err = tcp->tcpRecv(recv_ptr, 1, has_read, 0);
-                if (!err) {
-                    ROS_ERROR("tcpDoCmd : recv timeout");
-                    return;
-                }
-
-                if (*recv_ptr == ';')
-                    break;
-                recv_ptr++;
+            // 运动指令不额外等待，减少发送延迟（原usleep(100000)已移除）
+            
+            // 使用带分隔符的接收方法（命令以';'结尾）
+            bool success = tcp->tcpRecvWithDelimiter(buf, sizeof(buf), has_read, 100);  // 100ms超时
+            
+            if (!success) {
+                ROS_ERROR("tcpDoCmd : recv timeout");
+                err_id = -1;
+                return;
             }
 
             ROS_INFO("tcp recv cmd : %s", buf);
             parseString(buf, cmd, err_id, result);
-        } catch (const std::logic_error& err) {
+        } catch (const TcpClientException& err) {
             ROS_ERROR("tcpDoCmd failed : %s", err.what());
+            err_id = -1;
+            tcp->disConnect();  // 断开以便下次重连
+        } catch (const std::exception& err) {
+            ROS_ERROR("tcpDoCmd exception : %s", err.what());
+            err_id = -1;
         }
     }
 };

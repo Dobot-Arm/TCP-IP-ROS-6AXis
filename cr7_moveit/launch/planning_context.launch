@@ -14,7 +14,6 @@
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
     <rosparam command="load" file="$(find cr7_moveit)/config/joint_limits.yaml"/>
-    <rosparam command="load" file="$(find cr7_moveit)/config/cartesian_limits.yaml"/>
   </group>
 
   <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->

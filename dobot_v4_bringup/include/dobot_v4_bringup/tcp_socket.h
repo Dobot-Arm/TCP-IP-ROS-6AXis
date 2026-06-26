@@ -77,5 +77,15 @@ public:
      */
     bool tcpRecv(void* buf, uint32_t len, uint32_t& has_read, uint32_t timeout);
 
+    /**
+     * tcpRecvWithDelimiter - 用于命令端口，接收直到遇到分号';'为止
+     */
+    bool tcpRecvWithDelimiter(void* buf, uint32_t len, uint32_t& has_read, uint32_t timeout);
+
+    /**
+     * isConnected - 检查socket是否真正连接（不仅仅是标志位）
+     */
+    bool isConnected() const;
+
     std::string toString();
 };

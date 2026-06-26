@@ -527,7 +527,7 @@ std::string parsermovJRequest2String(dobot_v4_bringup::MovJ::Request& request)
 {
     std::string stringOrder = "MovJ(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
 
     if (request.mode) {
@@ -549,7 +549,7 @@ std::string parsermovLRequest2String(dobot_v4_bringup::MovL::Request& request)
 {
     std::string stringOrder = "MovL(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
 
     if (request.mode) {
@@ -571,7 +571,7 @@ std::string parserMovLIORequest2String(dobot_v4_bringup::MovLIO::Request& reques
 {
     std::string stringOrder = "MovLIO(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
 
     if (request.mode) {
@@ -601,7 +601,7 @@ std::string parserMovJIORequest2String(dobot_v4_bringup::MovJIO::Request& reques
 {
     std::string stringOrder = "MovJIO(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
 
     if (request.mode) {
@@ -632,9 +632,9 @@ std::string parserArcRequest2String(dobot_v4_bringup::Arc::Request& request)
     std::string stringOrder = "Arc(";
     char cmdCoordinate[100];
     char cmdCoordinate2[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
-    sprintf(cmdCoordinate2, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a2, request.b2, request.c2, request.d2,
+    snprintf(cmdCoordinate2, sizeof(cmdCoordinate2), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a2, request.b2, request.c2, request.d2,
             request.e2, request.f2);
     if (request.mode) {
         stringOrder = stringOrder + "joint=" + cmdCoordinate + "," + "joint=" + cmdCoordinate2;
@@ -657,7 +657,7 @@ std::string parsermoveJogRequest2String(dobot_v4_bringup::MoveJog::Request& requ
 {
     std::string stringOrder = "MoveJog(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%s", request.axisID.c_str());
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%s", request.axisID.c_str());
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
         for (int i = 0; i < request.paramValue.size(); i++) {
@@ -681,7 +681,7 @@ std::string parserRelMovJToolRequest2String(dobot_v4_bringup::RelMovJTool::Reque
 {
     std::string stringOrder = "RelMovJTool(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -698,7 +698,7 @@ std::string parserRelMovLToolRequest2String(dobot_v4_bringup::RelMovLTool::Reque
 {
     std::string stringOrder = "RelMovLTool(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -715,7 +715,7 @@ std::string parserRelMovJUserRequest2String(dobot_v4_bringup::RelMovJUser::Reque
 {
     std::string stringOrder = "RelMovJUser(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -733,7 +733,7 @@ std::string parserRelMovLUserRequest2String(dobot_v4_bringup::RelMovLUser::Reque
 {
     std::string stringOrder = "RelMovLUser(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -751,7 +751,7 @@ std::string parserrelJointMovJRequest2String(dobot_v4_bringup::RelJointMovJ::Req
 {
     std::string stringOrder = "RelJointMovJ(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -792,7 +792,7 @@ std::string parserServoPRequest2String(dobot_v4_bringup::ServoP::Request& reques
 {
     std::string stringOrder = "ServoP(";
     char cmdCoordinate[100];
-    sprintf(cmdCoordinate, "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f", request.a, request.b, request.c, request.d, request.e,
             request.f);
     stringOrder = stringOrder + cmdCoordinate;
     if (!(request.paramValue.empty() || request.paramValue[0].empty())) {
@@ -812,9 +812,9 @@ std::string parserCircleRequest2String(dobot_v4_bringup::Circle::Request& reques
     std::string stringOrder = "Circle(";
     char cmdCoordinate[100];
     char cmdCoordinate2[100];
-    sprintf(cmdCoordinate, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
+    snprintf(cmdCoordinate, sizeof(cmdCoordinate), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a, request.b, request.c, request.d,
             request.e, request.f);
-    sprintf(cmdCoordinate2, "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a2, request.b2, request.c2, request.d2,
+    snprintf(cmdCoordinate2, sizeof(cmdCoordinate2), "{%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f}", request.a2, request.b2, request.c2, request.d2,
             request.e2, request.f2);
     if (request.mode) {
         stringOrder = stringOrder + "joint=" + cmdCoordinate + "," + "joint=" + cmdCoordinate2;

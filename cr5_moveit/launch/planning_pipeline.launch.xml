@@ -1,10 +1,35 @@
 <launch>
 
-  <!-- This file makes it easy to include different planning pipelines;
-       It is assumed that all planning pipelines are named XXX_planning_pipeline.launch  -->
+  <!-- Multi-planner configuration: OMPL + CHOMP loaded simultaneously -->
+  <arg name="capabilities" default=""/>
+  <arg name="disable_capabilities" default=""/>
+  <arg name="start_state_max_bounds_error" value="0.1" />
 
-  <arg name="pipeline" default="ompl" />
+  <!-- OMPL Planning Pipeline -->
+  <param name="planning_pipelines/ompl/planning_plugin" value="ompl_interface/OMPLPlanner" />
+  <param name="planning_pipelines/ompl/request_adapters" 
+         value="default_planner_request_adapters/AddTimeParameterization
+                default_planner_request_adapters/FixWorkspaceBounds
+                default_planner_request_adapters/FixStartStateBounds
+                default_planner_request_adapters/FixStartStateCollision
+                default_planner_request_adapters/FixStartStatePathConstraints" />
+  <param name="planning_pipelines/ompl/start_state_max_bounds_error" value="$(arg start_state_max_bounds_error)" />
+  <param name="planning_pipelines/ompl/capabilities" value="$(arg capabilities)" />
+  <param name="planning_pipelines/ompl/disable_capabilities" value="$(arg disable_capabilities)" />
+  <rosparam command="load" file="$(find cr5_moveit)/config/ompl_planning.yaml" ns="planning_pipelines/ompl" />
 
-  <include file="$(find cr5_moveit)/launch/$(arg pipeline)_planning_pipeline.launch.xml" />
+  <!-- CHOMP Planning Pipeline -->
+  <param name="planning_pipelines/chomp/planning_plugin" value="chomp_interface/CHOMPPlanner" />
+  <param name="planning_pipelines/chomp/request_adapters" 
+         value="default_planner_request_adapters/AddTimeParameterization
+                default_planner_request_adapters/ResolveConstraintFrames
+                default_planner_request_adapters/FixWorkspaceBounds
+                default_planner_request_adapters/FixStartStateBounds
+                default_planner_request_adapters/FixStartStateCollision
+                default_planner_request_adapters/FixStartStatePathConstraints" />
+  <param name="planning_pipelines/chomp/start_state_max_bounds_error" value="$(arg start_state_max_bounds_error)" />
+  <param name="planning_pipelines/chomp/capabilities" value="$(arg capabilities)" />
+  <param name="planning_pipelines/chomp/disable_capabilities" value="$(arg disable_capabilities)" />
+  <rosparam command="load" file="$(find cr5_moveit)/config/chomp_planning.yaml" ns="planning_pipelines/chomp" />
 
 </launch>

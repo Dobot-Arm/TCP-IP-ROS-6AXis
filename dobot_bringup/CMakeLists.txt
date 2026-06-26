@@ -233,6 +233,12 @@ add_executable(${PROJECT_NAME}
         src/tcp_socket.cpp
         )
 
+add_executable(demo
+        src/cr5_robot.cpp
+        src/demo.cpp
+        src/tcp_socket.cpp
+        )
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -243,9 +249,14 @@ add_executable(${PROJECT_NAME}
 ## same as for the library above
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(demo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+target_link_libraries(demo
         ${catkin_LIBRARIES}
         )
 

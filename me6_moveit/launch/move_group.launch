@@ -46,7 +46,6 @@
 
   <!-- Planning Functionality -->
   <include ns="move_group" file="$(find me6_moveit)/launch/planning_pipeline.launch.xml">
-    <arg name="pipeline" value="$(arg pipeline)" />
     <arg name="capabilities" value="$(arg capabilities)"/>
     <arg name="disable_capabilities" value="$(arg disable_capabilities)"/>
   </include>
@@ -72,6 +71,14 @@
     <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
     <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
     <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
+
+    <!-- Set default planning pipeline -->
+    <param name="default_planning_pipeline" value="$(arg pipeline)" />
+
+    <!-- Trajectory execution parameters -->
+    <param name="trajectory_execution/allowed_execution_duration_scaling" value="6"/>
+    <param name="trajectory_execution/allowed_goal_duration_margin" value="0.5"/>
+    <param name="trajectory_execution/execution_duration_monitoring" value="false"/>
 
 
     <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->

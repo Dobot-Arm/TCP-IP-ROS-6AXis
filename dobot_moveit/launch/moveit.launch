@@ -5,10 +5,8 @@
     roslaunch dobot_moveit moveit.launch fake_execution:=true  (for simulation)
 -->
 <launch>
-  <arg name="DOBOT_TYPE" default="$(env DOBOT_TYPE)" />
+  <arg name="DOBOT_TYPE" default="$(optenv DOBOT_TYPE cr5)" />
   <arg name="fake_execution" default="false" />
-  <param name="/move_group/planning/velocity_scaling_factor" value="0.2" />
-  <param name="/move_group/planning/acceleration_scaling_factor" value="0.2" />
   <include file="$(dirname)/../../$(arg DOBOT_TYPE)_moveit/launch/$(arg DOBOT_TYPE)_moveit.launch">
     <arg name="fake_execution" value="$(arg fake_execution)" />
   </include>

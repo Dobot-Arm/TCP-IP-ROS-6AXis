@@ -9,18 +9,20 @@
  ***********************************************************************************************************************
  */
 
-// GetToolDo is not definded
-
 #include <ros/ros.h>
 #include <ros/param.h>
 #include <dobot_v4_bringup/cr5_v4_robot.h>
 #include <dobot_v4_bringup/parseTool.h>
+
+// 静态常量定义
+const double CRRobot::SERVOJ_DURATION = 0.03;  // 33Hz插补频率
 
 CRRobot::CRRobot(ros::NodeHandle& nh, std::string name)
     : ActionServer<FollowJointTrajectoryAction>(nh, std::move(name), false)
     , goal_{}
     , control_nh_(nh)
     , trajectory_duration_(1.0)
+    , stop_requested_(false)
 {
     index_ = 0;
     memset(goal_, 0, sizeof(goal_));
@@ -29,12 +31,17 @@ CRRobot::CRRobot(ros::NodeHandle& nh, std::string name)
 CRRobot::~CRRobot()
 {
     ROS_INFO("~CRRobot");
+    backend_task_.stop();
+    stop_thread_ = true;
+    if (threadPubFeedBackInfo.joinable()) {
+        threadPubFeedBackInfo.join();
+    }
 }
 
 void CRRobot::init()
 {
     std::string ip = control_nh_.param<std::string>("robot_ip_address", "192.168.5.1");
-    trajectory_duration_ = control_nh_.param("trajectory_duration", 0.3);
+    trajectory_duration_ = control_nh_.param("trajectory_duration", 0.02);  // 50Hz
     ROS_INFO("trajectory_duration : %0.2f", trajectory_duration_);
 
     int numRobotNodes = control_nh_.param("num_nodes", 1);
@@ -73,7 +80,7 @@ void CRRobot::init()
     std::string serviceEnableSafeSkin = serviceProjectName + serviceRobotName + "srv/EnableSafeSkin";
     std::string serviceSetSafeSkin = serviceProjectName + serviceRobotName + "srv/SetSafeSkin";
     std::string serviceGetStartPose = serviceProjectName + serviceRobotName + "srv/GetStartPose";
-    std::string serviceStartPath = serviceProjectName + serviceRobotName + "srv/StartPatht";
+    std::string serviceStartPath = serviceProjectName + serviceRobotName + "srv/StartPath";
     std::string servicePositiveKin = serviceProjectName + serviceRobotName + "srv/PositiveKin";
     std::string serviceInverseKin = serviceProjectName + serviceRobotName + "srv/InverseKin";
     std::string serviceGetAngle = serviceProjectName + serviceRobotName + "srv/GetAngle";
@@ -96,7 +103,7 @@ void CRRobot::init()
     std::string serviceAI = serviceProjectName + serviceRobotName + "srv/AI";
     std::string serviceToolAI = serviceProjectName + serviceRobotName + "srv/ToolAI";
     std::string serviceDIGroup = serviceProjectName + serviceRobotName + "srv/DIGroup";
-    std::string serviceDOGroup = serviceProjectName + serviceRobotName + "srv/DoGroup";
+    std::string serviceDOGroup = serviceProjectName + serviceRobotName + "srv/DOGroup";
     std::string serviceBrakeControl = serviceProjectName + serviceRobotName + "srv/BrakeControl";
     std::string serviceStartDrag = serviceProjectName + serviceRobotName + "srv/StartDrag";
     std::string serviceStopDrag = serviceProjectName + serviceRobotName + "srv/StopDrag";
@@ -245,238 +252,237 @@ void CRRobot::init()
 
     pubFeedInfo = control_nh_.advertise<std_msgs::String>(topicFeedInfo, 1000);
     threadPubFeedBackInfo = std::thread(&CRRobot::pubFeedBackInfo, this);
-    threadPubFeedBackInfo.detach();
     start();
 }
 
 void CRRobot::pubFeedBackInfo()
 {
-    RealTimeData* realTimeData = nullptr;
+    RealTimeData realTimeData;
     // 设置发布频率为10Hz
     ros::Rate rate(100);
-    while (ros::ok()) {
-        realTimeData = (const_cast<RealTimeData*>(commander_->getRealData()));
+    while (ros::ok() && !stop_thread_) {
+        commander_->getRealData(realTimeData);
         nlohmann::json root;
-        root["len"] = realTimeData->len;
-        root["digital_input_bits"] = realTimeData->digital_input_bits;
-        root["digital_outputs"] = realTimeData->digital_outputs;
-        root["robot_mode"] = realTimeData->robot_mode;
-        root["controller_timer"] = realTimeData->controller_timer;
-        root["run_time"] = realTimeData->run_time;
-        root["test_value"] = realTimeData->test_value;
-        root["safety_mode"] = realTimeData->safety_mode;
-        root["speed_scaling"] = realTimeData->speed_scaling;
-        root["linear_momentum_norm"] = realTimeData->linear_momentum_norm;
-        root["v_main"] = realTimeData->v_main;
-        root["v_robot"] = realTimeData->v_robot;
-        root["i_robot"] = realTimeData->i_robot;
-        root["program_state"] = realTimeData->program_state;
-        root["safety_status"] = realTimeData->safety_status;
+        root["len"] = realTimeData.len;
+        root["digital_input_bits"] = realTimeData.digital_input_bits;
+        root["digital_outputs"] = realTimeData.digital_outputs;
+        root["robot_mode"] = realTimeData.robot_mode;
+        root["controller_timer"] = realTimeData.controller_timer;
+        root["run_time"] = realTimeData.run_time;
+        root["test_value"] = realTimeData.test_value;
+        root["safety_mode"] = realTimeData.safety_mode;
+        root["speed_scaling"] = realTimeData.speed_scaling;
+        root["linear_momentum_norm"] = realTimeData.linear_momentum_norm;
+        root["v_main"] = realTimeData.v_main;
+        root["v_robot"] = realTimeData.v_robot;
+        root["i_robot"] = realTimeData.i_robot;
+        root["program_state"] = realTimeData.program_state;
+        root["safety_status"] = realTimeData.safety_status;
 
         std::vector<double> vecTransit;    // vector 中转存取数组类型
         for (int i = 0; i < 3; i++) {
-            vecTransit.push_back(realTimeData->tool_accelerometer_values[i]);
+            vecTransit.push_back(realTimeData.tool_accelerometer_values[i]);
         }
         root["tool_accelerometer_values"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 3; i++) {
-            vecTransit.push_back(realTimeData->elbow_position[i]);
+            vecTransit.push_back(realTimeData.elbow_position[i]);
         }
         root["elbow_position"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 3; i++) {
-            vecTransit.push_back(realTimeData->elbow_velocity[i]);
+            vecTransit.push_back(realTimeData.elbow_velocity[i]);
         }
         root["elbow_velocity"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->q_target[i]);
+            vecTransit.push_back(realTimeData.q_target[i]);
         }
         root["q_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->qd_target[i]);
+            vecTransit.push_back(realTimeData.qd_target[i]);
         }
         root["qd_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->qdd_target[i]);
+            vecTransit.push_back(realTimeData.qdd_target[i]);
         }
         root["qdd_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->i_target[i]);
+            vecTransit.push_back(realTimeData.i_target[i]);
         }
         root["i_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->m_target[i]);
+            vecTransit.push_back(realTimeData.m_target[i]);
         }
         root["m_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->q_actual[i]);
+            vecTransit.push_back(realTimeData.q_actual[i]);
         }
         root["q_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->qd_actual[i]);
+            vecTransit.push_back(realTimeData.qd_actual[i]);
         }
         root["qd_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->i_actual[i]);
+            vecTransit.push_back(realTimeData.i_actual[i]);
         }
         root["i_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->i_control[i]);
+            vecTransit.push_back(realTimeData.i_control[i]);
         }
         root["i_control"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->tool_vector_actual[i]);
+            vecTransit.push_back(realTimeData.tool_vector_actual[i]);
         }
         root["tool_vector_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->TCP_speed_actual[i]);
+            vecTransit.push_back(realTimeData.TCP_speed_actual[i]);
         }
         root["TCP_speed_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->TCP_force[i]);
+            vecTransit.push_back(realTimeData.TCP_force[i]);
         }
         root["TCP_force"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->Tool_vector_target[i]);
+            vecTransit.push_back(realTimeData.Tool_vector_target[i]);
         }
         root["tool_vector_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->TCP_speed_target[i]);
+            vecTransit.push_back(realTimeData.TCP_speed_target[i]);
         }
         root["TCP_speed_target"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->motor_temperatures[i]);
+            vecTransit.push_back(realTimeData.motor_temperatures[i]);
         }
         root["motor_temperatures"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->joint_modes[i]);
+            vecTransit.push_back(realTimeData.joint_modes[i]);
         }
         root["joint_modes"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->v_actual[i]);
+            vecTransit.push_back(realTimeData.v_actual[i]);
         }
         root["v_actual"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 4; i++) {
-            vecTransit.push_back(realTimeData->handtype[i]);
+            vecTransit.push_back(realTimeData.handtype[i]);
         }
         root["handtype"] = vecTransit;
         vecTransit.clear();
 
-        root["userCoordinate"] = realTimeData->userCoordinate;
-        root["toolCoordinate"] = realTimeData->toolCoordinate;
-        root["isRunQueuedCmd"] = realTimeData->isRunQueuedCmd;
-        root["isPauseCmdFlag"] = realTimeData->isPauseCmdFlag;
-        root["velocityRatio"] = realTimeData->velocityRatio;
-        root["accelerationRatio"] = realTimeData->accelerationRatio;
-        root["jerkRatio"] = realTimeData->jerkRatio;
-        root["xyzVelocityRatio"] = realTimeData->xyzVelocityRatio;
-        root["rVelocityRatio"] = realTimeData->rVelocityRatio;
-        root["xyzAccelerationRatio"] = realTimeData->xyzAccelerationRatio;
-        root["rAccelerationRatio"] = realTimeData->rAccelerationRatio;
-        root["xyzJerkRatio"] = realTimeData->xyzJerkRatio;
-        root["rJerkRatio"] = realTimeData->rJerkRatio;
-        root["BrakeStatus"] = realTimeData->BrakeStatus;
-        root["EnableStatus"] = realTimeData->EnableStatus;
-        root["DragStatus"] = realTimeData->DragStatus;
-        root["RunningStatus"] = realTimeData->RunningStatus;
-        root["ErrorStatus"] = realTimeData->ErrorStatus;
-        root["JogStatus"] = realTimeData->JogStatus;
-        root["RobotType"] = realTimeData->RobotType;
-        root["DragButtonSignal"] = realTimeData->DragButtonSignal;
-        root["EnableButtonSignal"] = realTimeData->EnableButtonSignal;
-        root["RecordButtonSignal"] = realTimeData->RecordButtonSignal;
-        root["ReappearButtonSignal"] = realTimeData->ReappearButtonSignal;
-        root["JawButtonSignal"] = realTimeData->JawButtonSignal;
-        root["SixForceOnline"] = realTimeData->SixForceOnline;
-        root["CollisionStates"] = realTimeData->CollisionStates;
-        root["ArmApproachState"] = realTimeData->ArmApproachState;
-        root["J4ApproachState"] = realTimeData->J4ApproachState;
-        root["J5ApproachState"] = realTimeData->J5ApproachState;
-        root["J6ApproachState"] = realTimeData->J6ApproachState;
-        root["vibrationDisZ"] = realTimeData->vibrationDisZ;
-        root["currentCommandId"] = realTimeData->currentCommandId;
+        root["userCoordinate"] = realTimeData.userCoordinate;
+        root["toolCoordinate"] = realTimeData.toolCoordinate;
+        root["isRunQueuedCmd"] = realTimeData.isRunQueuedCmd;
+        root["isPauseCmdFlag"] = realTimeData.isPauseCmdFlag;
+        root["velocityRatio"] = realTimeData.velocityRatio;
+        root["accelerationRatio"] = realTimeData.accelerationRatio;
+        root["jerkRatio"] = realTimeData.jerkRatio;
+        root["xyzVelocityRatio"] = realTimeData.xyzVelocityRatio;
+        root["rVelocityRatio"] = realTimeData.rVelocityRatio;
+        root["xyzAccelerationRatio"] = realTimeData.xyzAccelerationRatio;
+        root["rAccelerationRatio"] = realTimeData.rAccelerationRatio;
+        root["xyzJerkRatio"] = realTimeData.xyzJerkRatio;
+        root["rJerkRatio"] = realTimeData.rJerkRatio;
+        root["BrakeStatus"] = realTimeData.BrakeStatus;
+        root["EnableStatus"] = realTimeData.EnableStatus;
+        root["DragStatus"] = realTimeData.DragStatus;
+        root["RunningStatus"] = realTimeData.RunningStatus;
+        root["ErrorStatus"] = realTimeData.ErrorStatus;
+        root["JogStatus"] = realTimeData.JogStatus;
+        root["RobotType"] = realTimeData.RobotType;
+        root["DragButtonSignal"] = realTimeData.DragButtonSignal;
+        root["EnableButtonSignal"] = realTimeData.EnableButtonSignal;
+        root["RecordButtonSignal"] = realTimeData.RecordButtonSignal;
+        root["ReappearButtonSignal"] = realTimeData.ReappearButtonSignal;
+        root["JawButtonSignal"] = realTimeData.JawButtonSignal;
+        root["SixForceOnline"] = realTimeData.SixForceOnline;
+        root["CollisionStates"] = realTimeData.CollisionStates;
+        root["ArmApproachState"] = realTimeData.ArmApproachState;
+        root["J4ApproachState"] = realTimeData.J4ApproachState;
+        root["J5ApproachState"] = realTimeData.J5ApproachState;
+        root["J6ApproachState"] = realTimeData.J6ApproachState;
+        root["vibrationDisZ"] = realTimeData.vibrationDisZ;
+        root["currentCommandId"] = realTimeData.currentCommandId;
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->m_actual[i]);
+            vecTransit.push_back(realTimeData.m_actual[i]);
         }
         root["m_actual"] = vecTransit;
         vecTransit.clear();
 
-        root["load"] = realTimeData->load;
-        root["centerX"] = realTimeData->centerX;
-        root["centerY"] = realTimeData->centerY;
-        root["centerZ"] = realTimeData->centerZ;
+        root["load"] = realTimeData.load;
+        root["centerX"] = realTimeData.centerX;
+        root["centerY"] = realTimeData.centerY;
+        root["centerZ"] = realTimeData.centerZ;
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->user[i]);
+            vecTransit.push_back(realTimeData.user[i]);
         }
         root["user"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->tool[i]);
+            vecTransit.push_back(realTimeData.tool[i]);
         }
         root["tool"] = vecTransit;
         vecTransit.clear();
 
-        root["TraceIndex"] = realTimeData->TraceIndex;    // 1296 ~ 1303 轨迹复现索引 （未实现）
+        root["TraceIndex"] = realTimeData.TraceIndex;    // 1296 ~ 1303 轨迹复现索引 （未实现）
 
         for (int i = 0; i < 6; i++) {
-            vecTransit.push_back(realTimeData->SixForceValue[i]);
+            vecTransit.push_back(realTimeData.SixForceValue[i]);
         }
         root["SixForceValue"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 4; i++) {
-            vecTransit.push_back(realTimeData->TargetQuaternion[i]);
+            vecTransit.push_back(realTimeData.TargetQuaternion[i]);
         }
         root["TargetQuaternion"] = vecTransit;
         vecTransit.clear();
 
         for (int i = 0; i < 4; i++) {
-            vecTransit.push_back(realTimeData->ActualQuaternion[i]);
+            vecTransit.push_back(realTimeData.ActualQuaternion[i]);
         }
         root["ActualQuaternion"] = vecTransit;
         vecTransit.clear();
-        root["AutoManualMode"] = realTimeData->AutoManualMode;    // 1416 ~ 1417 手自动模式 0: 未开启 1: manual 2:auto
+        root["AutoManualMode"] = realTimeData.AutoManualMode;    // 1416 ~ 1417 手自动模式 0: 未开启 1: manual 2:auto
 
         std::string feedBackVecStr = root.dump();
 
@@ -542,85 +548,116 @@ void CRRobot::moveHandle(const ros::TimerEvent& tm,
                          ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle handle)
 {
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = handle.getGoal();
-
-    static const double SERVOJ_DURATION = 0.03;  // 33Hz 插补频率
-    double t = SERVOJ_DURATION;
-    double aheadtime = 60.0;
-    ros::Rate timer(1.0 / SERVOJ_DURATION);
-    double t0 = ros::Time::now().toSec();
-
-    ROS_INFO("Starting trajectory execution with %zu waypoints, total duration: %0.3fs", 
-             goal->trajectory.points.size(),
-             goal->trajectory.points.back().time_from_start.toSec());
-
-    try {
-        for (int i = 0; i < goal->trajectory.points.size() - 1; i++) {
-            trajectory_msgs::JointTrajectoryPoint interp_traj_begin = goal->trajectory.points[i];
-            trajectory_msgs::JointTrajectoryPoint interp_traj_end = goal->trajectory.points[i + 1];
-            double real_time;
-            double t1;
-            t1 = ros::Time::now().toSec();
-            real_time = t1 - t0;
-            
-            while (real_time < interp_traj_end.time_from_start.toSec()) {
-                // 时间索引：当前时刻在当前区间内的相对时间
-                // servoj 是实时跟踪命令，连续发送时机器人实时跟踪目标位置
-                double time_index = real_time - interp_traj_begin.time_from_start.toSec();
-                double T = interp_traj_end.time_from_start.toSec() - interp_traj_begin.time_from_start.toSec();
-                
-                // 防止负时间索引和超出区间
-                if (time_index < 0.0) {
-                    time_index = 0.0;
-                } else if (time_index > T) {
-                    time_index = T;
-                }
-                
-                // 防止除以零：如果区间时间为零，跳过该区间
-                if (T <= 0.0) {
-                    break;
-                }
-                
-                std::vector<double> tmp = sample_traj(interp_traj_begin, interp_traj_end, time_index);
-                char cmd[150];
-                sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
-                        tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], t, aheadtime);
-                int32_t err_id;
-                commander_->motionDoCmd(cmd, err_id);
-                timer.sleep();
-                t1 = ros::Time::now().toSec();
-                real_time = t1 - t0;
-            }
-        }
-        
-        // 发送最后一个点
-        std::vector<double> last_traj;
-        int point_num = goal->trajectory.points.size();
-        for (int i = 0; i < 6; i++) {
-            last_traj.push_back(goal->trajectory.points[point_num - 1].positions[i] * 180 / M_PI);
-        }
-        char cmd[150];
-        sprintf(cmd, "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=%0.1f)", 
-                last_traj[0], last_traj[1], last_traj[2], last_traj[3], last_traj[4], last_traj[5], t, aheadtime);
-        int32_t err_id;
-        commander_->motionDoCmd(cmd, err_id);
-        
-        // 等待最后一段运动完成
-        ros::Duration(SERVOJ_DURATION).sleep();
-        
-    } catch (const TcpClientException& err) {
-        ROS_ERROR("%s", err.what());
+    size_t num_points = goal->trajectory.points.size();
+    
+    // 检查是否收到停止请求
+    if (stop_requested_) {
+        ROS_INFO("Trajectory execution stopped");
+        timer_.stop();
+        movj_timer_.stop();
+        handle.setAborted();
+        stop_requested_ = false;
         return;
     }
-
-    ROS_INFO("Trajectory execution completed");
-    timer_.stop();
-    movj_timer_.stop();
-    handle.setSucceeded();
+    
+    // 检查是否所有点已下发（index_从1开始，发完最后一个点后index_==num_points）
+    if (index_ >= num_points) {
+#define OFFSET_VAL 0.01
+        double current_joints[6];
+        getJointState(current_joints);
+        bool reached = true;
+        for (int i = 0; i < 6; i++) {
+            if (fabs(current_joints[i] - goal_[i]) > OFFSET_VAL) {
+                reached = false;
+                break;
+            }
+        }
+        if (reached) {
+            ROS_INFO("Trajectory execution completed");
+            timer_.stop();
+            movj_timer_.stop();
+            handle.setSucceeded();
+        }
+        return;
+    }
+    
+    // 记录轨迹开始时间
+    if (trajectory_start_.isZero()) {
+        trajectory_start_ = ros::Time::now();
+        ROS_INFO("Trajectory started at %.3fs", trajectory_start_.toSec());
+    }
+    
+    // 仅有一个点：直接下发目标位置
+    if (num_points <= 1) {
+        char cmd[150];
+        snprintf(cmd, sizeof(cmd), "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=50.0)", 
+                goal->trajectory.points[0].positions[0] * 180.0 / M_PI,
+                goal->trajectory.points[0].positions[1] * 180.0 / M_PI,
+                goal->trajectory.points[0].positions[2] * 180.0 / M_PI,
+                goal->trajectory.points[0].positions[3] * 180.0 / M_PI,
+                goal->trajectory.points[0].positions[4] * 180.0 / M_PI,
+                goal->trajectory.points[0].positions[5] * 180.0 / M_PI,
+                trajectory_duration_);
+        int32_t err_id;
+        commander_->motionDoCmd(cmd, err_id);
+        index_ = num_points;
+        return;
+    }
+    
+    // index_ 从1开始，始终瞄准 points[index_]（下一个目标点）
+    // 在 points[index_-1] 的预定时刻发 points[index_]，让机器人无缝连续运动
+    ros::Time now = ros::Time::now();
+    ros::Time send_time = trajectory_start_ + goal->trajectory.points[index_ - 1].time_from_start;
+    if (now < send_time) {
+        return;
+    }
+    
+    // t = 相邻路点时间差（segment duration），跟随 MoveIt 规划的时间线
+    // 注意：t 不能太小，否则控制器无法完成平滑规划导致抖动。
+    // 参考 ROS2 版本，设置 t 范围为 [0.05, 3600.0]
+    double t = goal->trajectory.points[index_].time_from_start.toSec() - 
+               goal->trajectory.points[index_ - 1].time_from_start.toSec();
+    t = std::max(0.05, std::min(t, 3600.0));  // 范围 [0.05, 3600]
+    
+    // 调试输出（每个新段开始输出一次）
+    if (index_ <= 2 || index_ % 5 == 0) {
+        ROS_INFO("Pt %u/%zu: target=pts[%u], time_from_start=%.3fs, t=%.4fs",
+                 index_, num_points, index_,
+                 goal->trajectory.points[index_].time_from_start.toSec(), t);
+    }
+    
+    // 发送 ServoJ：目标=points[index_]，dobot controller 会将其与上一个 servoj 平滑衔接
+    // aheadtime=50.0 是提前量（无单位，范围[20,100]），默认值，提供较好的平滑性
+    char cmd[150];
+    snprintf(cmd, sizeof(cmd), "servoj(%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,t=%0.3f,aheadtime=50.0)", 
+            goal->trajectory.points[index_].positions[0] * 180.0 / M_PI,
+            goal->trajectory.points[index_].positions[1] * 180.0 / M_PI,
+            goal->trajectory.points[index_].positions[2] * 180.0 / M_PI,
+            goal->trajectory.points[index_].positions[3] * 180.0 / M_PI,
+            goal->trajectory.points[index_].positions[4] * 180.0 / M_PI,
+            goal->trajectory.points[index_].positions[5] * 180.0 / M_PI,
+            t);
+    int32_t err_id;
+    commander_->motionDoCmd(cmd, err_id);
+    
+    index_++;
 }
 
 void CRRobot::goalHandle(ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle handle)
 {
-    index_ = 0;
+    index_ = 1;  // 从1开始，跳过P0（机器人已在P0），始终瞄准 next point
+    trajectory_start_ = ros::Time(0);  // 重置轨迹开始时间
+    
+    // 输出轨迹点数量调试信息
+    const auto& traj = handle.getGoal()->trajectory;
+    ROS_INFO("Received trajectory with %zu points", traj.points.size());
+    if (traj.points.size() < 5) {
+        ROS_WARN("Warning: trajectory has only %zu points, may cause stuttering", traj.points.size());
+        for (size_t i = 0; i < traj.points.size(); i++) {
+            ROS_INFO("  Point %zu: time_from_start=%.3fs", i, traj.points[i].time_from_start.toSec());
+        }
+    }
+    
     for (uint32_t i = 0; i < 6; i++) {
         goal_[i] = handle.getGoal()->trajectory.points[handle.getGoal()->trajectory.points.size() - 1].positions[i];
     }

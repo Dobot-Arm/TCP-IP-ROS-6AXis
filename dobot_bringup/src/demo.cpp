@@ -40,10 +40,11 @@ int main(int argc, char* argv[])
         dobot_bringup::ToolVectorActual tool_vector_actual_msg;
         ros::Publisher tool_vector_pub =
             private_node.advertise<dobot_bringup::ToolVectorActual>("/dobot_bringup/msg/ToolVectorActual", 100);
-            string z ="/";
-            string a = getenv("DOBOT_TYPE");
+            string z = "/";
+            const char* dobot_type = getenv("DOBOT_TYPE");
+            string a = dobot_type ? dobot_type : "cr5";
             string b = "_robot/joint_controller/follow_joint_trajectory";
-            string ss = z+ a+ b ;
+            string ss = z + a + b;
 
         for (uint32_t i = 0; i < 6; i++)
         {

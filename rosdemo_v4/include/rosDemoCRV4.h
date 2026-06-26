@@ -8,6 +8,7 @@
 #include <mutex>
 #include <fstream>
 #include <vector>
+#include <atomic>
 #include "rosdemo_v4/EnableRobot.h"
 #include "rosdemo_v4/DisableRobot.h"
 #include "rosdemo_v4/ClearError.h"
@@ -18,8 +19,10 @@ class RosDemoCRV4
 {
 public:
     RosDemoCRV4(ros::NodeHandle* nh);
-    void movePoint(std::vector<double>& pointA, int& id);
+    ~RosDemoCRV4();
+    void movePoint(const std::vector<double>& pointA, int& id);
     void finishPoint(int id);
+    void stop();
 
 private:
     ros::ServiceClient m_enableRobot;
@@ -31,6 +34,8 @@ private:
     std::mutex m_mutex;
     std::thread threadClearRobotError;
     std::thread threadParseRobotError;
+    std::atomic<bool> m_running{ true };
+    
     struct FeedInfo
     {
         int EnableStatus;
@@ -50,14 +55,11 @@ private:
     template <typename T>
     bool SendService(ros::ServiceClient serviceClient, T& arg);
     void parseRobotAlarm();
-    // Add more service servers if needed
 };
 
-// 模板函数 发送service服务
 template <typename T>
 bool RosDemoCRV4::SendService(ros::ServiceClient serviceClient, T& arg)
 {
-    // 请求服务
     if (serviceClient.call(arg)) {
         return true;
     }

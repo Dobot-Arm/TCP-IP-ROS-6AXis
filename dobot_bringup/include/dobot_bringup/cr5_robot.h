@@ -144,6 +144,9 @@ private:
     std::thread threadPubFeedBackInfo;
     ros::Publisher pubFeedInfo;
     std::shared_ptr<ServoJParam> kServoJParam;
+    std::atomic<bool> stop_requested_{false};  // 停止请求标志
+    ros::Time trajectory_start_;  // 轨迹开始时间
+    static const double SERVOJ_DURATION;  // servoj 默认持续时间
 
 public:
     /**
