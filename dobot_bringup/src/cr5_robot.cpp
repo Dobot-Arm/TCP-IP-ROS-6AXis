@@ -276,6 +276,11 @@ void CR5Robot::moveHandle(const ros::TimerEvent& tm,
     
     // 检查是否所有点已下发（index_从1开始，发完最后一个点后index_==num_points）
     if (index_ >= num_points) {
+        // 首次进入补时阶段，记录起始时间
+        if (completion_check_start_.isZero()) {
+            completion_check_start_ = ros::Time::now();
+        }
+        
 #define OFFSET_VAL 0.01
         double current_joints[6];
         getJointState(current_joints);
@@ -291,6 +296,36 @@ void CR5Robot::moveHandle(const ros::TimerEvent& tm,
             timer_.stop();
             movj_timer_.stop();
             handle.setSucceeded();
+            completion_check_start_ = ros::Time(0);  // 重置
+        } else {
+            // 断线检测：直接 abort，不等超时
+            if (!isConnected()) {
+                ROS_WARN("Robot disconnected during trajectory completion, aborting");
+                timer_.stop();
+                movj_timer_.stop();
+                handle.setAborted();
+                completion_check_start_ = ros::Time(0);
+                return;
+            }
+            // 超时检测：最后一段 ServoJ 的 t + 5s 兜底
+            // 最后一段 t 就是机器人实际需要的时间，不等整条轨迹时长
+            double last_segment_t;
+            if (num_points >= 2) {
+                last_segment_t = goal->trajectory.points[num_points - 1].time_from_start.toSec() -
+                                 goal->trajectory.points[num_points - 2].time_from_start.toSec();
+            } else {
+                last_segment_t = trajectory_duration_;  // 单点轨迹用 trajectory_duration_
+            }
+            last_segment_t = std::max(0.05, last_segment_t);  // 最小 50ms 对齐 dt 裁剪
+            double timeout = last_segment_t + 5.0;
+            double elapsed = (ros::Time::now() - completion_check_start_).toSec();
+            if (elapsed > timeout) {
+                ROS_WARN("Trajectory completion timeout after %.1fs (segment_t=%.1fs)", elapsed, last_segment_t);
+                timer_.stop();
+                movj_timer_.stop();
+                handle.setAborted();
+                completion_check_start_ = ros::Time(0);  // 重置
+            }
         }
         return;
     }
@@ -360,6 +395,7 @@ void CR5Robot::goalHandle(ActionServer<control_msgs::FollowJointTrajectoryAction
 {
     index_ = 1;  // 从1开始，跳过P0（机器人已在P0），始终瞄准 next point
     trajectory_start_ = ros::Time(0);  // 重置轨迹开始时间
+    completion_check_start_ = ros::Time(0);  // 重置完成检测起始时间
     
     // 输出轨迹点数量调试信息
     const auto& traj = handle.getGoal()->trajectory;
